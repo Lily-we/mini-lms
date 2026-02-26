@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block content %}
+  <div class="card">
+    <h2>{{ section.title }}</h2>
+    {% if section.description %}<p class="small">{{ section.description }}</p>{% endif %}
+    <a href="/" class="btn">← Back</a>
+  </div>
+
+  <div style="height:14px"></div>
+
+  <div class="grid">
+    {% for item in items %}
+      <div class="card">
+        <h3>{{ item.title }}</h3>
+        <p class="small">Type: {{ item.type }}</p>
+
+        {% if item.type == "TEXT" %}
+          <div class="small">
+            {{ item.data.text|default:"(no text yet)"|linebreaksbr }}
+          </div>
+
+        {% elif item.type == "LINK" %}
+          <a class="btn" href="{{ item.data.url }}" target="_blank" rel="noopener">Open link</a>
+
+        {% elif item.type == "YOUTUBE" %}
+          {% if item.data.youtube_url %}
+            <div style="aspect-ratio:16/9; width:100%;">
+              <iframe
+                style="width:100%; height:100%; border:0; border-radius:12px;"
+                src="https://www.youtube.com/embed/{{ item.data.youtube_id|default:'' }}"
+                allowfullscreen
+              ></iframe>
+            </div>
+            <p class="small">If embed is empty, store youtube_id in data.</p>
+          {% else %}
+            <p class="small">Set data.youtube_url or data.youtube_id in Admin.</p>
+          {% endif %}
+
+        {% elif item.type == "TELEGRAM" %}
+          <a class="btn" href="{{ item.data.invite_url }}" target="_blank" rel="noopener">Open Telegram</a>
+
+        {% elif item.type == "DRAWING" or item.type == "DXF" %}
+          {% if item.asset %}
+            <p class="small">File: {{ item.asset.title }}</p>
+            <a class="btn" href="{{ item.asset.file.url }}" target="_blank" rel="noopener">Download / Open</a>
+          {% else %}
+            <p class="small">Attach a FileAsset in Admin.</p>
+          {% endif %}
+
+        {% elif item.type == "QUIZ" %}
+  {% if item.quiz %}
+    <a class="btn" href="{% url 'quiz_start' item.quiz.id %}">Start Quiz</a>
+  {% else %}
+    <p class="small">Create a Quiz in Admin and link it to this ContentItem.</p>
+  {% endif %}
+
+        {% elif item.type == "ANIMATION" %}
+          <p class="small">Animation will be here (light MVP).</p>
+
+        {% else %}
+          <p class="small">Unsupported item type yet.</p>
+        {% endif %}
+      </div>
+    {% empty %}
+      <div class="card">
+        <p>No items yet. Add in Admin → Content items.</p>
+      </div>
+    {% endfor %}
+  </div>
+{% endblock %}

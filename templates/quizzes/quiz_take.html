@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block content %}
+{% if questions %}
+  <form method="post" class="card">
+    {% csrf_token %}
+
+    {% for q in questions %}
+      <div style="margin-bottom:16px; padding-bottom:12px; border-bottom:1px solid rgba(255,255,255,0.12);">
+        <strong>{{ forloop.counter }}. {{ q.text }}</strong>
+        <div style="margin-top:10px;">
+          {% for c in q.choices.all %}
+            <label style="display:block; margin:6px 0;">
+              <input type="radio" name="q_{{ q.id }}" value="{{ c.id }}">
+              {{ c.text }}
+            </label>
+          {% empty %}
+            <p class="small">No choices yet (add choices in Admin).</p>
+          {% endfor %}
+        </div>
+      </div>
+    {% endfor %}
+
+    <button class="btn" type="submit">Submit</button>
+  </form>
+{% else %}
+  <div class="card">
+    <h3>No questions yet</h3>
+    <p class="small">Admin → Quizzes → Questions: add questions and choices for this quiz.</p>
+    <a class="btn" href="/admin/quizzes/question/add/">Add Question in Admin</a>
+  </div>
+{% endif %}
+{% endblock %}

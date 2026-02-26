@@ -1,5 +1,23 @@
 {% extends "base.html" %}
 {% block content %}
-<h1>Mini LMS</h1>
-<p>Welcome. Sections will appear here.</p>
+  <div class="card">
+    <h1>Mini LMS</h1>
+    <p class="small">Bo‘limlar</p>
+  </div>
+
+  <div style="height:14px"></div>
+
+  <div class="grid">
+    {% for s in sections %}
+      <div class="card">
+        <h3>{{ s.title }}</h3>
+        {% if s.description %}<p class="small">{{ s.description }}</p>{% endif %}
+        <a class="btn" href="{% url 'section_detail' s.slug %}">Open</a>
+      </div>
+    {% empty %}
+      <div class="card">
+        <p>No sections yet. Add in Admin → Sections.</p>
+      </div>
+    {% endfor %}
+  </div>
 {% endblock %}

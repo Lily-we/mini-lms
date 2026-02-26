@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% load extras %}
+{% block content %}
+  <div class="card">
+    <h2>{{ quiz.title }} — Result</h2>
+    <p class="small">Score: {{ attempt.score }} / {{ attempt.total }}</p>
+    <a class="btn" href="/">Home</a>
+  </div>
+
+  <div style="height:14px"></div>
+
+  <div class="grid">
+    {% for q in questions %}
+      <div class="card">
+        <strong>{{ forloop.counter }}. {{ q.text }}</strong>
+
+        <div style="margin-top:10px;">
+          {% for c in q.choices.all %}
+            {% with ans=answers|get_item:q.id %}
+            <div class="small">
+              {% if ans and ans.selected_choice_id == c.id %}👉{% else %}&nbsp;&nbsp;{% endif %}
+              {{ c.text }}
+              {% if c.is_correct %}<span class="small"> (correct)</span>{% endif %}
+            </div>
+            {% endwith %}
+          {% endfor %}
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% endblock %}
