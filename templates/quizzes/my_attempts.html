@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+  <div class="card">
+    <h2>My Attempts</h2>
+    <p class="small">Your quiz history and results.</p>
+  </div>
+
+  <div style="height:14px"></div>
+
+  <div class="grid">
+    {% for a in attempts %}
+      <div class="card">
+        <h3>{{ a.quiz.title }}</h3>
+        <p class="small">Started: {{ a.started_at }}</p>
+
+        {% if a.is_submitted %}
+          <p class="small">Score: {{ a.score }} / {{ a.total }}</p>
+          <a class="btn" href="{% url 'quiz_result' a.id %}">View Result</a>
+        {% else %}
+          <p class="small">Status: in progress</p>
+          <a class="btn" href="{% url 'quiz_take' a.id %}">Continue</a>
+        {% endif %}
+      </div>
+    {% empty %}
+      <div class="card">
+        <p>No attempts yet.</p>
+      </div>
+    {% endfor %}
+  </div>
+{% endblock %}

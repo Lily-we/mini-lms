@@ -10,6 +10,7 @@
 <body>
   <div class="nav">
     <a href="/">Home</a>
+    <a href="{% url 'my_attempts' %}">My Attempts</a>
 
     <div class="right">
       {% if user.is_authenticated %}

@@ -2,16 +2,34 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
-
 from .models import Quiz, QuizAttempt, Answer, Choice
 
+@login_required
+def my_attempts(request):
+    attempts = (
+        QuizAttempt.objects
+        .filter(user=request.user)
+        .select_related("quiz")
+        .order_by("-started_at")
+    )
+    return render(request, "quizzes/my_attempts.html", {"attempts": attempts})
 
 @login_required
 def quiz_start(request, quiz_id: int):
     quiz = get_object_or_404(Quiz, pk=quiz_id)
+
+    # Continue unfinished attempt if exists
+    existing = QuizAttempt.objects.filter(
+        quiz=quiz,
+        user=request.user,
+        submitted_at__isnull=True
+    ).first()
+
+    if existing:
+        return redirect("quiz_take", attempt_id=existing.id)
+
     attempt = QuizAttempt.objects.create(quiz=quiz, user=request.user)
     return redirect("quiz_take", attempt_id=attempt.id)
-
 
 @login_required
 def quiz_take(request, attempt_id: int):

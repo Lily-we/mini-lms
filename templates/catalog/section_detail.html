@@ -22,19 +22,52 @@
         {% elif item.type == "LINK" %}
           <a class="btn" href="{{ item.data.url }}" target="_blank" rel="noopener">Open link</a>
 
-        {% elif item.type == "YOUTUBE" %}
-          {% if item.data.youtube_url %}
-            <div style="aspect-ratio:16/9; width:100%;">
-              <iframe
-                style="width:100%; height:100%; border:0; border-radius:12px;"
-                src="https://www.youtube.com/embed/{{ item.data.youtube_id|default:'' }}"
-                allowfullscreen
-              ></iframe>
-            </div>
-            <p class="small">If embed is empty, store youtube_id in data.</p>
-          {% else %}
-            <p class="small">Set data.youtube_url or data.youtube_id in Admin.</p>
-          {% endif %}
+{% elif item.type == "YOUTUBE" %}
+  {% if item.data.youtube_id %}
+    <div class="card" style="padding:14px;">
+      <div class="small" style="margin-bottom:8px;">Video</div>
+
+      {# Thumbnail always visible #}
+      <a href="https://www.youtube.com/watch?v={{ item.data.youtube_id }}" target="_blank" rel="noopener">
+        <img
+          src="https://img.youtube.com/vi/{{ item.data.youtube_id }}/hqdefault.jpg"
+          alt="YouTube thumbnail"
+          style="width:100%; border-radius:12px; border:1px solid rgba(255,255,255,0.12);">
+      </a>
+
+      <div style="height:10px"></div>
+
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        {% if item.data.youtube_url %}
+          <a class="btn" href="{{ item.data.youtube_url }}" target="_blank" rel="noopener">Open on YouTube</a>
+        {% else %}
+          <a class="btn" href="https://www.youtube.com/watch?v={{ item.data.youtube_id }}" target="_blank" rel="noopener">Open on YouTube</a>
+        {% endif %}
+
+        <button class="btn" type="button"
+                onclick="document.getElementById('yt_{{ item.id }}').style.display='block'; this.style.display='none';">
+          Play here (embed)
+        </button>
+      </div>
+
+      <div id="yt_{{ item.id }}" style="display:none; margin-top:12px;">
+        <div style="aspect-ratio:16/9; width:100%; border-radius:12px; overflow:hidden; border:1px solid rgba(255,255,255,0.12);">
+          <iframe
+            style="width:100%; height:100%; border:0;"
+            src="https://www.youtube-nocookie.com/embed/{{ item.data.youtube_id }}?rel=0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerpolicy="strict-origin-when-cross-origin"
+            allowfullscreen>
+          </iframe>
+        </div>
+        <p class="small" style="margin-top:8px;">
+          If embed shows “Video unavailable”, your network/browser blocks YouTube embeds — use “Open on YouTube”.
+        </p>
+      </div>
+    </div>
+  {% else %}
+    <p class="small">Set {"youtube_url":"https://..."} or {"youtube_id":"..."} in Admin.</p>
+  {% endif %}
 
         {% elif item.type == "TELEGRAM" %}
           <a class="btn" href="{{ item.data.invite_url }}" target="_blank" rel="noopener">Open Telegram</a>
@@ -46,7 +79,7 @@
           {% else %}
             <p class="small">Attach a FileAsset in Admin.</p>
           {% endif %}
-
+        <a class="btn" href="{% url 'quiz_start' item.quiz.id %}">Start Quiz</a>
         {% elif item.type == "QUIZ" %}
   {% if item.quiz %}
     <a class="btn" href="{% url 'quiz_start' item.quiz.id %}">Start Quiz</a>

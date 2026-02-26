@@ -1,6 +1,6 @@
 from django.db import models
 from django.utils.text import slugify
-
+from .utils import extract_youtube_id
 
 class Section(models.Model):
     title = models.CharField(max_length=200)
@@ -65,6 +65,20 @@ class ContentItem(models.Model):
 
     class Meta:
         ordering = ["order", "title"]
+    
+    def save(self, *args, **kwargs):
+    # Auto-derive youtube_id if admin pastes youtube_url
+        if self.type == self.ItemType.YOUTUBE and isinstance(self.data, dict):
+            youtube_id = self.data.get("youtube_id")
+            youtube_url = self.data.get("youtube_url")
+            if (not youtube_id) and youtube_url:
+                vid = extract_youtube_id(youtube_url)
+                if vid:
+                # Make sure we assign back (JSONField change detection)
+                    new_data = dict(self.data)
+                    new_data["youtube_id"] = vid
+                    self.data = new_data
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.section.title} · {self.title}"
