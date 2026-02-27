@@ -10,14 +10,19 @@
 <body>
   <div class="nav">
     <a href="/">Home</a>
-    <a href="{% url 'my_attempts' %}">My Attempts</a>
+    {% if user.is_authenticated %}
+  <a href="{% url 'my_attempts' %}">My Attempts</a>
+{% endif %}
 
     <div class="right">
       {% if user.is_authenticated %}
         <span class="small">{{ user.username }}</span>
-        <a class="btn" href="/logout/">Logout</a>
-      {% else %}
+<form method="post" action="{% url 'logout' %}" style="display:inline;">
+  {% csrf_token %}
+  <button class="btn" type="submit">Logout</button>
+</form>      {% else %}
         <a class="btn" href="/login/">Login</a>
+        <a class="btn" href="{% url 'register' %}">Register</a>
       {% endif %}
     </div>
   </div>

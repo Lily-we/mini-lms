@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block content %}
+  <div class="card">
+    <h2>Create account</h2>
+
+    <form method="post">
+      {% csrf_token %}
+
+      {% if form.non_field_errors %}
+        <div class="small">{{ form.non_field_errors }}</div>
+      {% endif %}
+
+      <div style="margin-bottom:10px;">
+        {{ form.username }}
+        <div class="small">{{ form.username.errors }}</div>
+      </div>
+
+      <div style="margin-bottom:10px;">
+        {{ form.password1 }}
+        <div class="small">{{ form.password1.errors }}</div>
+      </div>
+
+      <div style="margin-bottom:10px;">
+        {{ form.password2 }}
+        <div class="small">{{ form.password2.errors }}</div>
+      </div>
+
+      <button class="btn" type="submit">Register</button>
+      <a class="btn" href="{% url 'login' %}">Back to login</a>
+    </form>
+  </div>
+{% endblock %}

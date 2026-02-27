@@ -73,18 +73,18 @@
           <a class="btn" href="{{ item.data.invite_url }}" target="_blank" rel="noopener">Open Telegram</a>
 
         {% elif item.type == "DRAWING" or item.type == "DXF" %}
-          {% if item.asset %}
-            <p class="small">File: {{ item.asset.title }}</p>
-            <a class="btn" href="{{ item.asset.file.url }}" target="_blank" rel="noopener">Download / Open</a>
-          {% else %}
-            <p class="small">Attach a FileAsset in Admin.</p>
-          {% endif %}
-        <a class="btn" href="{% url 'quiz_start' item.quiz.id %}">Start Quiz</a>
-        {% elif item.type == "QUIZ" %}
-  {% if item.quiz %}
+  {% if item.asset %}
+    <p class="small">File: {{ item.asset.title }}</p>
+    <a class="btn" href="{{ item.asset.file.url }}" target="_blank" rel="noopener">Download / Open</a>
+  {% else %}
+    <p class="small">Attach a FileAsset in Admin.</p>
+  {% endif %}
+
+{% elif item.type == "QUIZ" %}
+  {% if item.quiz and item.quiz.id %}
     <a class="btn" href="{% url 'quiz_start' item.quiz.id %}">Start Quiz</a>
   {% else %}
-    <p class="small">Create a Quiz in Admin and link it to this ContentItem.</p>
+    <p class="small">Quiz is not linked yet. Admin → Quizzes → create a Quiz and select this ContentItem.</p>
   {% endif %}
 
         {% elif item.type == "ANIMATION" %}
