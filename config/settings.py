@@ -25,8 +25,7 @@ SECRET_KEY = os.getenv("SECRET_KEY", "unsafe-secret-key")
 DEBUG = os.getenv("DEBUG", "0") == "1"
 
 _allowed_hosts = os.getenv("ALLOWED_HOSTS", "")
-ALLOWED_HOSTS = [h.strip() for h in _allowed_hosts.split(",") if h.strip()] if not DEBUG else ["*"]
-
+ALLOWED_HOSTS = ["*"]
 
 # Application definition
 
