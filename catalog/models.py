@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils.text import slugify
 from .utils import extract_youtube_id
+import mimetypes
 
 class Section(models.Model):
     title = models.CharField(max_length=200)
@@ -33,6 +34,13 @@ class FileAsset(models.Model):
     mime_type = models.CharField(max_length=120, blank=True)
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
+    def save(self, *args, **kwargs):
+        if not self.mime_type and self.file and hasattr(self.file, "name"):
+            guess, _ = mimetypes.guess_type(self.file.name)
+            if guess:
+                self.mime_type = guess
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return self.title
 
@@ -54,10 +62,7 @@ class ContentItem(models.Model):
     order = models.PositiveIntegerField(default=0)
     is_published = models.BooleanField(default=True)
 
-    # flexible payload (MVP)
     data = models.JSONField(default=dict, blank=True)
-
-    # optional file link
     asset = models.ForeignKey(FileAsset, null=True, blank=True, on_delete=models.SET_NULL)
 
     created_at = models.DateTimeField(auto_now_add=True)
@@ -65,19 +70,19 @@ class ContentItem(models.Model):
 
     class Meta:
         ordering = ["order", "title"]
-    
+
     def save(self, *args, **kwargs):
-    # Auto-derive youtube_id if admin pastes youtube_url
+        # Auto-derive youtube_id if admin pastes youtube_url
         if self.type == self.ItemType.YOUTUBE and isinstance(self.data, dict):
             youtube_id = self.data.get("youtube_id")
             youtube_url = self.data.get("youtube_url")
             if (not youtube_id) and youtube_url:
                 vid = extract_youtube_id(youtube_url)
                 if vid:
-                # Make sure we assign back (JSONField change detection)
                     new_data = dict(self.data)
                     new_data["youtube_id"] = vid
                     self.data = new_data
+
         super().save(*args, **kwargs)
 
     def __str__(self):

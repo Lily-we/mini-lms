@@ -34,7 +34,14 @@ class ContentItemAdminForm(forms.ModelForm):
 
         if item_type == ContentItem.ItemType.TELEGRAM:
             if "invite_url" not in data:
-                raise forms.ValidationError("TELEGRAM requires data.invite_url. Example: {\"invite_url\": \"https://t.me/+...\"}")
+                raise forms.ValidationError('TELEGRAM requires data.invite_url. Example: {"invite_url":"https://t.me/+..."}')
+
+        rq = data.get("required_quiz_id")
+        if rq is not None:
+            if isinstance(rq, str) and rq.isdigit():
+                data["required_quiz_id"] = int(rq)
+            elif not isinstance(rq, int):
+                raise forms.ValidationError('required_quiz_id must be an integer (Quiz ID).')
 
         return data
 

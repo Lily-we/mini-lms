@@ -1,31 +1,58 @@
 {% extends "base.html" %}
 {% load extras %}
+{% block title %}{{ quiz.title }} — Result{% endblock %}
+
 {% block content %}
-  <div class="card">
-    <h2>{{ quiz.title }} — Result</h2>
-    <p class="small">Score: {{ attempt.score }} / {{ attempt.total }}</p>
-    <a class="btn" href="/">Home</a>
-  </div>
-
-  <div style="height:14px"></div>
-
-  <div class="grid">
-    {% for q in questions %}
-      <div class="card">
-        <strong>{{ forloop.counter }}. {{ q.text }}</strong>
-
-        <div style="margin-top:10px;">
-          {% for c in q.choices.all %}
-            {% with ans=answers|get_item:q.id %}
-            <div class="small">
-              {% if ans and ans.selected_choice_id == c.id %}👉{% else %}&nbsp;&nbsp;{% endif %}
-              {{ c.text }}
-              {% if c.is_correct %}<span class="small"> (correct)</span>{% endif %}
-            </div>
-            {% endwith %}
-          {% endfor %}
+<section class="container mx-auto px-6 lg:px-16 py-12">
+  <div class="max-w-3xl mx-auto">
+    <div class="fade-in rounded-2xl border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-white/5 backdrop-blur-md shadow p-6">
+      <div class="flex items-start justify-between gap-6 flex-wrap">
+        <div>
+          <h1 class="text-2xl font-extrabold">{{ quiz.title }} — Result</h1>
+          <p class="text-slate-600 dark:text-slate-300 mt-1">Score: <span class="font-semibold">{{ attempt.score }}</span> / {{ attempt.total }}</p>
+        </div>
+        <div class="flex gap-2">
+          <a class="px-4 py-2 rounded-xl border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-white/5 hover:bg-white dark:hover:bg-white/10 transition"
+             href="{% url 'home' %}">Home</a>
+          <a class="px-4 py-2 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 transition
+                    dark:bg-cyan-400 dark:text-slate-950 dark:hover:bg-cyan-300"
+             href="{% url 'my_attempts' %}">My Attempts</a>
         </div>
       </div>
-    {% endfor %}
+
+      <div class="mt-6 space-y-4">
+        {% for q in questions %}
+          <div class="rounded-2xl border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-white/5 p-5">
+            <div class="font-semibold">{{ forloop.counter }}. {{ q.text }}</div>
+
+            {% with ans=answers|get_item:q.id %}
+              <div class="mt-3 space-y-2">
+                {% for c in q.choices.all %}
+                  <div class="p-3 rounded-xl border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-white/5">
+                    <div class="flex items-center justify-between gap-3">
+                      <div class="flex items-center gap-2">
+                        {% if ans and ans.selected_choice_id == c.id %}
+                          <span class="font-semibold text-indigo-700 dark:text-cyan-200">👉</span>
+                        {% else %}
+                          <span class="text-slate-400">•</span>
+                        {% endif %}
+                        <span>{{ c.text }}</span>
+                      </div>
+
+                      {% if c.is_correct %}
+                        <span class="text-xs px-2 py-1 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-400/10 dark:text-emerald-200">
+                          correct
+                        </span>
+                      {% endif %}
+                    </div>
+                  </div>
+                {% endfor %}
+              </div>
+            {% endwith %}
+          </div>
+        {% endfor %}
+      </div>
+    </div>
   </div>
+</section>
 {% endblock %}

@@ -1,103 +1,137 @@
 {% extends "base.html" %}
+{% block title %}{{ section.title }} — SpatialLab{% endblock %}
+
 {% block content %}
-  <div class="card">
-    <h2>{{ section.title }}</h2>
-    {% if section.description %}<p class="small">{{ section.description }}</p>{% endif %}
-    <a href="/" class="btn">← Back</a>
+<section class="container mx-auto px-6 lg:px-16 py-10">
+  <div class="fade-in flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+    <div>
+      <h1 class="text-2xl md:text-3xl font-extrabold">{{ section.title }}</h1>
+      {% if section.description %}
+        <p class="text-slate-600 dark:text-slate-300 mt-1">{{ section.description }}</p>
+      {% endif %}
+    </div>
+    <a href="{% url 'home' %}"
+       class="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 dark:border-white/10
+              bg-white/70 dark:bg-white/5 backdrop-blur-md hover:bg-white dark:hover:bg-white/10 transition">
+      ← Back
+    </a>
   </div>
 
-  <div style="height:14px"></div>
-
-  <div class="grid">
+  <div class="mt-6 grid lg:grid-cols-2 gap-4">
     {% for item in items %}
-      <div class="card">
-        <h3>{{ item.title }}</h3>
-        <p class="small">Type: {{ item.type }}</p>
-
-        {% if item.type == "TEXT" %}
-          <div class="small">
-            {{ item.data.text|default:"(no text yet)"|linebreaksbr }}
-          </div>
-
-        {% elif item.type == "LINK" %}
-          <a class="btn" href="{{ item.data.url }}" target="_blank" rel="noopener">Open link</a>
-
-{% elif item.type == "YOUTUBE" %}
-  {% if item.data.youtube_id %}
-    <div class="card" style="padding:14px;">
-      <div class="small" style="margin-bottom:8px;">Video</div>
-
-      {# Thumbnail always visible #}
-      <a href="https://www.youtube.com/watch?v={{ item.data.youtube_id }}" target="_blank" rel="noopener">
-        <img
-          src="https://img.youtube.com/vi/{{ item.data.youtube_id }}/hqdefault.jpg"
-          alt="YouTube thumbnail"
-          style="width:100%; border-radius:12px; border:1px solid rgba(255,255,255,0.12);">
-      </a>
-
-      <div style="height:10px"></div>
-
-      <div style="display:flex; gap:10px; flex-wrap:wrap;">
-        {% if item.data.youtube_url %}
-          <a class="btn" href="{{ item.data.youtube_url }}" target="_blank" rel="noopener">Open on YouTube</a>
-        {% else %}
-          <a class="btn" href="https://www.youtube.com/watch?v={{ item.data.youtube_id }}" target="_blank" rel="noopener">Open on YouTube</a>
-        {% endif %}
-
-        <button class="btn" type="button"
-                onclick="document.getElementById('yt_{{ item.id }}').style.display='block'; this.style.display='none';">
-          Play here (embed)
-        </button>
-      </div>
-
-      <div id="yt_{{ item.id }}" style="display:none; margin-top:12px;">
-        <div style="aspect-ratio:16/9; width:100%; border-radius:12px; overflow:hidden; border:1px solid rgba(255,255,255,0.12);">
-          <iframe
-            style="width:100%; height:100%; border:0;"
-            src="https://www.youtube-nocookie.com/embed/{{ item.data.youtube_id }}?rel=0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-            referrerpolicy="strict-origin-when-cross-origin"
-            allowfullscreen>
-          </iframe>
+      <div class="fade-in rounded-2xl border border-slate-200 dark:border-white/10
+                  bg-white/70 dark:bg-white/5 backdrop-blur-md shadow p-5">
+        <div class="min-w-0">
+          <div class="font-extrabold text-lg">{{ item.title }}</div>
+          <div class="text-xs mt-1 text-slate-500 dark:text-slate-400">Type: {{ item.type }}</div>
         </div>
-        <p class="small" style="margin-top:8px;">
-          If embed shows “Video unavailable”, your network/browser blocks YouTube embeds — use “Open on YouTube”.
-        </p>
-      </div>
-    </div>
-  {% else %}
-    <p class="small">Set {"youtube_url":"https://..."} or {"youtube_id":"..."} in Admin.</p>
-  {% endif %}
 
-        {% elif item.type == "TELEGRAM" %}
-          <a class="btn" href="{{ item.data.invite_url }}" target="_blank" rel="noopener">Open Telegram</a>
+        <div class="mt-4">
+          {% if item.type == "TEXT" %}
+            <div class="text-slate-700 dark:text-slate-200 leading-relaxed">
+              {{ item.data.text|default:"(no text yet)"|linebreaksbr }}
+            </div>
 
-        {% elif item.type == "DRAWING" or item.type == "DXF" %}
-  {% if item.asset %}
-    <p class="small">File: {{ item.asset.title }}</p>
-    <a class="btn" href="{{ item.asset.file.url }}" target="_blank" rel="noopener">Download / Open</a>
-  {% else %}
-    <p class="small">Attach a FileAsset in Admin.</p>
-  {% endif %}
+          {% elif item.type == "LINK" %}
+            <a class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 transition
+                      dark:bg-cyan-400 dark:text-slate-950 dark:hover:bg-cyan-300"
+               href="{{ item.data.url }}" target="_blank" rel="noopener">Open link →</a>
 
-{% elif item.type == "QUIZ" %}
-  {% if item.quiz and item.quiz.id %}
-    <a class="btn" href="{% url 'quiz_start' item.quiz.id %}">Start Quiz</a>
-  {% else %}
-    <p class="small">Quiz is not linked yet. Admin → Quizzes → create a Quiz and select this ContentItem.</p>
-  {% endif %}
+          {% elif item.type == "YOUTUBE" %}
+            {% if item.data.youtube_id %}
+              <a href="https://www.youtube.com/watch?v={{ item.data.youtube_id }}" target="_blank" rel="noopener">
+                <img src="https://img.youtube.com/vi/{{ item.data.youtube_id }}/hqdefault.jpg"
+                     class="w-full rounded-xl border border-slate-200 dark:border-white/10"
+                     alt="YouTube thumbnail">
+              </a>
+              <div class="mt-3 flex flex-wrap gap-2">
+                <a class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 transition
+                          dark:bg-cyan-400 dark:text-slate-950 dark:hover:bg-cyan-300"
+                   href="{{ item.data.youtube_url|default:'https://www.youtube.com/watch?v='|add:item.data.youtube_id }}"
+                   target="_blank" rel="noopener">Open on YouTube →</a>
 
-        {% elif item.type == "ANIMATION" %}
-          <p class="small">Animation will be here (light MVP).</p>
+                <button class="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 dark:border-white/10
+                               bg-white/70 dark:bg-white/5 backdrop-blur-md hover:bg-white dark:hover:bg-white/10 transition"
+                        type="button"
+                        onclick="document.getElementById('yt_{{ item.id }}').classList.remove('hidden'); this.classList.add('hidden');">
+                  Play here (embed)
+                </button>
+              </div>
 
-        {% else %}
-          <p class="small">Unsupported item type yet.</p>
-        {% endif %}
+              <div id="yt_{{ item.id }}" class="hidden mt-4">
+                <div class="aspect-video w-full rounded-xl overflow-hidden border border-slate-200 dark:border-white/10">
+                  <iframe class="w-full h-full"
+                          src="https://www.youtube-nocookie.com/embed/{{ item.data.youtube_id }}?rel=0"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                          referrerpolicy="strict-origin-when-cross-origin"
+                          allowfullscreen></iframe>
+                </div>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-2">
+                  If embed fails on some networks, use “Open on YouTube”.
+                </p>
+              </div>
+            {% else %}
+              <p class="text-sm text-slate-600 dark:text-slate-300">Set youtube_url or youtube_id in Admin.</p>
+            {% endif %}
+
+          {% elif item.type == "TELEGRAM" %}
+            <a class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 transition
+                      dark:bg-cyan-400 dark:text-slate-950 dark:hover:bg-cyan-300"
+               href="{{ item.data.invite_url }}" target="_blank" rel="noopener">Open Telegram →</a>
+
+          {% elif item.type == "DRAWING" %}
+            {% if item.asset %}
+              <div class="text-sm text-slate-600 dark:text-slate-300 mb-2">File: {{ item.asset.title }}</div>
+
+              {% if item.asset.mime_type == "application/pdf" %}
+                <div class="h-[420px] rounded-xl overflow-hidden border border-slate-200 dark:border-white/10">
+                  <iframe src="{{ item.asset.file.url }}" class="w-full h-full"></iframe>
+                </div>
+              {% elif item.asset.mime_type|slice:":6" == "image/" %}
+                <img src="{{ item.asset.file.url }}" class="w-full rounded-xl border border-slate-200 dark:border-white/10" alt="{{ item.asset.title }}">
+              {% endif %}
+
+              <div class="mt-3">
+                <a class="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 dark:border-white/10
+                          bg-white/70 dark:bg-white/5 backdrop-blur-md hover:bg-white dark:hover:bg-white/10 transition"
+                   href="{{ item.asset.file.url }}" target="_blank" rel="noopener">Open / Download</a>
+              </div>
+            {% else %}
+              <p class="text-sm text-slate-600 dark:text-slate-300">Attach a FileAsset in Admin.</p>
+            {% endif %}
+
+          {% elif item.type == "DXF" %}
+            {% if item.asset %}
+              <div class="text-sm text-slate-600 dark:text-slate-300 mb-2">DXF: {{ item.asset.title }}</div>
+              <a class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 transition
+                        dark:bg-cyan-400 dark:text-slate-950 dark:hover:bg-cyan-300"
+                 href="{{ item.asset.file.url }}" target="_blank" rel="noopener">Download DXF</a>
+            {% else %}
+              <p class="text-sm text-slate-600 dark:text-slate-300">Attach a DXF FileAsset in Admin.</p>
+            {% endif %}
+
+          {% elif item.type == "QUIZ" %}
+            {% if item.quiz and item.quiz.id %}
+              <a class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 transition
+                        dark:bg-cyan-400 dark:text-slate-950 dark:hover:bg-cyan-300"
+                 href="{% url 'quiz_start' item.quiz.id %}">Start Quiz →</a>
+            {% else %}
+              <p class="text-sm text-slate-600 dark:text-slate-300">Quiz is not linked yet in Admin.</p>
+            {% endif %}
+
+          {% elif item.type == "ANIMATION" %}
+            <p class="text-sm text-slate-600 dark:text-slate-300">Animation (MVP placeholder).</p>
+
+          {% else %}
+            <p class="text-sm text-slate-600 dark:text-slate-300">Unsupported item type.</p>
+          {% endif %}
+        </div>
       </div>
     {% empty %}
-      <div class="card">
+      <div class="rounded-2xl border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-white/5 p-6">
         <p>No items yet. Add in Admin → Content items.</p>
       </div>
     {% endfor %}
   </div>
+</section>
 {% endblock %}

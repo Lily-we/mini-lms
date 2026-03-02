@@ -1,34 +1,152 @@
 {% load static %}
 <!doctype html>
-<html>
+<html lang="en" class="">
 <head>
-  <meta charset="utf-8">
-  <title>Mini LMS</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="{% static 'css/app.css' %}">
-</head>
-<body>
-  <div class="nav">
-    <a href="/">Home</a>
-    {% if user.is_authenticated %}
-  <a href="{% url 'my_attempts' %}">My Attempts</a>
-{% endif %}
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{% block title %}SpatialLab{% endblock %}</title>
 
-    <div class="right">
+  <!-- Tailwind: enable dark mode by class -->
+  <script>
+    window.tailwind = { config: { darkMode: 'class' } };
+  </script>
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- tsparticles -->
+  <script src="https://cdn.jsdelivr.net/npm/tsparticles@2.12.0/tsparticles.bundle.min.js"></script>
+
+  <style>
+    .fade-in { opacity: 0; transform: translateY(18px); transition: opacity .9s ease, transform .9s ease; }
+    .fade-in.show { opacity: 1; transform: translateY(0); }
+    .float { animation: float 6s ease-in-out infinite; }
+    @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-14px)} }
+
+    /* Make Django form fields look decent without custom form rendering */
+    input[type="text"], input[type="password"], input[type="email"], input[type="search"], textarea, select {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 1px solid rgba(148,163,184,.55);
+      background: rgba(255,255,255,.75);
+      outline: none;
+    }
+    .dark input[type="text"], .dark input[type="password"], .dark input[type="email"], .dark input[type="search"], .dark textarea, .dark select {
+      border-color: rgba(255,255,255,.14);
+      background: rgba(255,255,255,.06);
+      color: #fff;
+    }
+    label { display:block; font-weight:600; margin-bottom:6px; }
+  </style>
+
+  {% block extra_head %}{% endblock %}
+</head>
+
+<body class="bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 overflow-x-hidden">
+
+  <!-- soft gradients -->
+  <div class="absolute inset-0 -z-30 pointer-events-none">
+    <div class="absolute -top-32 -left-32 w-[520px] h-[520px] rounded-full blur-3xl opacity-30 bg-indigo-500 dark:bg-cyan-400"></div>
+    <div class="absolute -top-24 -right-40 w-[560px] h-[560px] rounded-full blur-3xl opacity-25 bg-purple-500 dark:bg-violet-500"></div>
+    <div class="absolute bottom-[-160px] left-[25%] w-[640px] h-[640px] rounded-full blur-3xl opacity-20 bg-emerald-400 dark:bg-fuchsia-400"></div>
+  </div>
+
+  <!-- particles -->
+  <div id="tsparticles" class="absolute inset-0 -z-20"></div>
+
+  <!-- Navbar -->
+  <nav class="relative z-20 flex justify-between items-center px-6 lg:px-16 py-4
+              bg-white/70 dark:bg-slate-900/60 backdrop-blur-md border-b border-slate-200 dark:border-white/10">
+    <a href="{% url 'home' %}" class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl grid place-items-center
+                  bg-indigo-600/15 text-indigo-700 dark:bg-cyan-400/15 dark:text-cyan-200
+                  border border-slate-200 dark:border-white/10">▦</div>
+      <div>
+        <div class="text-lg font-extrabold tracking-tight text-indigo-700 dark:text-cyan-200">SpatialLab</div>
+        <div class="text-xs text-slate-500 dark:text-slate-400">Chizmachilik • Fazoviy fikrlash</div>
+      </div>
+    </a>
+
+    <div class="flex items-center gap-3">
+      <button id="themeBtn"
+              class="px-3 py-2 rounded-lg border border-slate-200 dark:border-white/10
+                     bg-white/60 dark:bg-white/5 hover:bg-white dark:hover:bg-white/10 transition"
+              type="button" title="Toggle theme">🌓</button>
+
       {% if user.is_authenticated %}
-        <span class="small">{{ user.username }}</span>
-<form method="post" action="{% url 'logout' %}" style="display:inline;">
-  {% csrf_token %}
-  <button class="btn" type="submit">Logout</button>
-</form>      {% else %}
-        <a class="btn" href="/login/">Login</a>
-        <a class="btn" href="{% url 'register' %}">Register</a>
+        <a href="{% url 'my_attempts' %}" class="text-slate-700 dark:text-slate-200 hover:text-indigo-700 dark:hover:text-cyan-200 transition">
+          My Attempts
+        </a>
+
+        <span class="hidden sm:inline text-sm text-slate-500 dark:text-slate-400">{{ user.username }}</span>
+
+        <form method="post" action="{% url 'logout' %}">
+          {% csrf_token %}
+          <button class="px-4 py-2 bg-slate-900 text-white rounded-lg shadow hover:bg-slate-800 transition
+                         dark:bg-cyan-400 dark:text-slate-950 dark:hover:bg-cyan-300" type="submit">
+            Logout
+          </button>
+        </form>
+      {% else %}
+        <a href="{% url 'login' %}" class="text-slate-700 dark:text-slate-200 hover:text-indigo-700 dark:hover:text-cyan-200 transition">Log in</a>
+        <a href="{% url 'register' %}"
+           class="px-4 py-2 bg-indigo-600 text-white rounded-lg shadow hover:bg-indigo-700 transition
+                  dark:bg-cyan-400 dark:text-slate-950 dark:hover:bg-cyan-300">
+          Sign up
+        </a>
       {% endif %}
     </div>
-  </div>
+  </nav>
 
-  <div class="container">
+  <main class="relative z-10">
     {% block content %}{% endblock %}
-  </div>
+  </main>
+
+  <script>
+    // Fade-in
+    window.addEventListener("DOMContentLoaded", () => {
+      document.querySelectorAll(".fade-in").forEach((el, i) => {
+        setTimeout(() => el.classList.add("show"), i * 180);
+      });
+    });
+
+    // Theme toggle (persist)
+    const root = document.documentElement;
+    const themeBtn = document.getElementById("themeBtn");
+
+    function setTheme(t){
+      if(t === "dark") root.classList.add("dark");
+      else root.classList.remove("dark");
+      localStorage.setItem("theme", t);
+      themeBtn.textContent = t === "dark" ? "🌙" : "☀️";
+      initParticles();
+    }
+
+    setTheme(localStorage.getItem("theme") || "light");
+    themeBtn.addEventListener("click", () => setTheme(root.classList.contains("dark") ? "light" : "dark"));
+
+    function initParticles(){
+      const isDark = root.classList.contains("dark");
+      const nodeColor = isDark ? "#22d3ee" : "#4f46e5";
+      const linkColor = isDark ? "#22d3ee" : "#6366f1";
+
+      tsParticles.load("tsparticles", {
+        background: { color: "transparent" },
+        particles: {
+          number: { value: 70 },
+          color: { value: nodeColor },
+          opacity: { value: 0.55 },
+          size: { value: 3 },
+          move: { enable: true, speed: 0.8 },
+          links: { enable: true, distance: 140, color: linkColor, opacity: 0.35, width: 1 }
+        },
+        interactivity: {
+          events: { onHover: { enable: true, mode: "grab" } },
+          modes: { grab: { distance: 180, links: { opacity: 0.75 } } }
+        }
+      });
+    }
+  </script>
+
+  {% block extra_scripts %}{% endblock %}
 </body>
 </html>
