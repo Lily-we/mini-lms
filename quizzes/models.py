@@ -3,6 +3,11 @@ from django.db import models
 from catalog.models import ContentItem
 
 
+class Difficulty(models.TextChoices):
+    EASY = "EASY", "Sodda"
+    MEDIUM = "MEDIUM", "O‘rtacha"
+    HARD = "HARD", "Qiyinroq"
+
 class Quiz(models.Model):
     # Link quiz to a ContentItem where type=QUIZ
     content_item = models.OneToOneField(
@@ -23,6 +28,12 @@ class Question(models.Model):
     quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE, related_name="questions")
     text = models.TextField()
     order = models.PositiveIntegerField(default=0)
+
+    difficulty = models.CharField(
+        max_length=10,
+        choices=Difficulty.choices,
+        default=Difficulty.EASY,
+    )
 
     class Meta:
         ordering = ["order", "id"]
@@ -47,6 +58,12 @@ class Choice(models.Model):
 class QuizAttempt(models.Model):
     quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE, related_name="attempts")
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="quiz_attempts")
+
+    difficulty = models.CharField(
+        max_length=10,
+        choices=Difficulty.choices,
+        default=Difficulty.EASY,
+    )
 
     started_at = models.DateTimeField(auto_now_add=True)
     submitted_at = models.DateTimeField(null=True, blank=True)

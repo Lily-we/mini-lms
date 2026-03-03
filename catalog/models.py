@@ -50,7 +50,7 @@ class ContentItem(models.Model):
         TEXT = "TEXT", "Text"
         LINK = "LINK", "Link"
         YOUTUBE = "YOUTUBE", "YouTube"
-        DRAWING = "DRAWING", "Drawing (PDF/PNG)"
+        DRAWING = "DRAWING/BOOKS", "Drawing (PDF/PNG)"
         DXF = "DXF", "DXF (download)"
         ANIMATION = "ANIMATION", "Animation"
         QUIZ = "QUIZ", "Quiz"

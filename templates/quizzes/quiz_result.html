@@ -1,58 +1,169 @@
 {% extends "base.html" %}
 {% load extras %}
+
 {% block title %}{{ quiz.title }} — Result{% endblock %}
 
 {% block content %}
 <section class="container mx-auto px-6 lg:px-16 py-12">
-  <div class="max-w-3xl mx-auto">
-    <div class="fade-in rounded-2xl border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-white/5 backdrop-blur-md shadow p-6">
-      <div class="flex items-start justify-between gap-6 flex-wrap">
-        <div>
-          <h1 class="text-2xl font-extrabold">{{ quiz.title }} — Result</h1>
-          <p class="text-slate-600 dark:text-slate-300 mt-1">Score: <span class="font-semibold">{{ attempt.score }}</span> / {{ attempt.total }}</p>
-        </div>
-        <div class="flex gap-2">
-          <a class="px-4 py-2 rounded-xl border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-white/5 hover:bg-white dark:hover:bg-white/10 transition"
-             href="{% url 'home' %}">Home</a>
-          <a class="px-4 py-2 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 transition
-                    dark:bg-cyan-400 dark:text-slate-950 dark:hover:bg-cyan-300"
-             href="{% url 'my_attempts' %}">My Attempts</a>
+  <div class="max-w-5xl mx-auto">
+
+    <!-- Header -->
+    <div class="fade-in flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+      <div>
+        <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight">{{ quiz.title }} — Result</h1>
+        <div class="mt-1 text-sm text-slate-600 dark:text-slate-300">
+          Attempt #{{ attempt.id }} • Level: <span class="font-semibold">{{ attempt.difficulty }}</span>
         </div>
       </div>
 
-      <div class="mt-6 space-y-4">
-        {% for q in questions %}
-          <div class="rounded-2xl border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-white/5 p-5">
-            <div class="font-semibold">{{ forloop.counter }}. {{ q.text }}</div>
-
-            {% with ans=answers|get_item:q.id %}
-              <div class="mt-3 space-y-2">
-                {% for c in q.choices.all %}
-                  <div class="p-3 rounded-xl border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-white/5">
-                    <div class="flex items-center justify-between gap-3">
-                      <div class="flex items-center gap-2">
-                        {% if ans and ans.selected_choice_id == c.id %}
-                          <span class="font-semibold text-indigo-700 dark:text-cyan-200">👉</span>
-                        {% else %}
-                          <span class="text-slate-400">•</span>
-                        {% endif %}
-                        <span>{{ c.text }}</span>
-                      </div>
-
-                      {% if c.is_correct %}
-                        <span class="text-xs px-2 py-1 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-400/10 dark:text-emerald-200">
-                          correct
-                        </span>
-                      {% endif %}
-                    </div>
-                  </div>
-                {% endfor %}
-              </div>
-            {% endwith %}
-          </div>
-        {% endfor %}
+      <div class="flex flex-wrap gap-2">
+        <a href="{% url 'home' %}"
+           class="px-4 py-2 rounded-xl border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-white/5
+                  backdrop-blur-md hover:bg-white dark:hover:bg-white/10 transition">
+          Home
+        </a>
+        <a href="{% url 'my_attempts' %}"
+           class="px-4 py-2 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 transition
+                  dark:bg-cyan-400 dark:text-slate-950 dark:hover:bg-cyan-300">
+          My Attempts
+        </a>
       </div>
     </div>
+
+    <!-- Summary + Leaderboard -->
+    <div class="mt-6 grid lg:grid-cols-2 gap-4">
+      <!-- Summary -->
+      <div class="fade-in rounded-2xl border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-white/5 backdrop-blur-md shadow p-6">
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <div class="text-sm text-slate-600 dark:text-slate-300">Summary</div>
+            <div class="mt-2 text-2xl font-extrabold tracking-tight">
+              {{ attempt.score }} / {{ attempt.total }}
+            </div>
+            <div class="text-sm text-slate-600 dark:text-slate-300">
+              Results shown after submission
+            </div>
+          </div>
+
+          <div class="text-right">
+            <div class="text-sm text-slate-600 dark:text-slate-300">⏱ Time</div>
+            <div class="mt-2 inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-white/5">
+              <span class="font-extrabold">{{ duration_str }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-5 grid grid-cols-3 gap-3">
+          <div class="rounded-2xl border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-white/5 p-4">
+            <div class="text-xs text-slate-500 dark:text-slate-400">✅ Correct</div>
+            <div class="mt-1 text-2xl font-extrabold text-emerald-700 dark:text-emerald-200">{{ correct }}</div>
+          </div>
+
+          <div class="rounded-2xl border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-white/5 p-4">
+            <div class="text-xs text-slate-500 dark:text-slate-400">❌ Wrong</div>
+            <div class="mt-1 text-2xl font-extrabold text-rose-700 dark:text-rose-200">{{ wrong }}</div>
+          </div>
+
+          <div class="rounded-2xl border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-white/5 p-4">
+            <div class="text-xs text-slate-500 dark:text-slate-400">⏭ Skipped</div>
+            <div class="mt-1 text-2xl font-extrabold text-slate-700 dark:text-slate-200">{{ skipped }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Leaderboard -->
+      <div class="fade-in rounded-2xl border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-white/5 backdrop-blur-md shadow p-6">
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <div class="text-sm text-slate-600 dark:text-slate-300">Leaderboard</div>
+
+            {% if rank %}
+              <div class="mt-2 text-xl font-extrabold tracking-tight">
+                #{{ rank }} / {{ total_participants }}
+              </div>
+              <div class="mt-1 text-sm text-slate-600 dark:text-slate-300">
+                Higher than <span class="font-semibold">{{ percentile }}%</span> of participants
+              </div>
+            {% else %}
+              <div class="mt-2 text-sm text-slate-600 dark:text-slate-300">No leaderboard yet.</div>
+            {% endif %}
+          </div>
+
+          {% if rank %}
+            <div class="text-right">
+              <div class="text-xs text-slate-500 dark:text-slate-400">Rule</div>
+              <div class="mt-2 text-xs px-3 py-2 rounded-xl border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-white/5 text-slate-600 dark:text-slate-300 max-w-[240px]">
+                Retake allowed, leaderboard uses first attempt.
+              </div>
+            </div>
+          {% endif %}
+        </div>
+
+        {% if leaderboard_top %}
+          <div class="mt-5 text-sm font-semibold">Top results</div>
+          <div class="mt-3 space-y-2">
+            {% for e in leaderboard_top %}
+              <div class="flex items-center justify-between gap-3 p-3 rounded-2xl border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-white/5">
+                <div class="flex items-center gap-3 min-w-0">
+                  <div class="w-9 h-9 rounded-xl grid place-items-center font-extrabold
+                              bg-indigo-50 text-indigo-700 dark:bg-cyan-400/10 dark:text-cyan-200
+                              border border-slate-200 dark:border-white/10">
+                    {{ forloop.counter }}
+                  </div>
+
+                  <div class="min-w-0">
+                    <div class="font-semibold truncate">{{ e.user.username }}</div>
+                    <div class="text-xs text-slate-500 dark:text-slate-400">Score • Time</div>
+                  </div>
+                </div>
+
+                <div class="text-right">
+                  <div class="font-extrabold">{{ e.score }}</div>
+                  <div class="text-xs text-slate-500 dark:text-slate-400">{{ e.dur_str }}</div>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Detailed review -->
+    <div class="mt-6 space-y-4">
+      {% for q in questions %}
+        <div class="fade-in rounded-2xl border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-white/5 backdrop-blur-md shadow p-6">
+          <div class="font-semibold">
+            {{ forloop.counter }}. {{ q.text }}
+          </div>
+
+          {% with ans=answers|get_item:q.id %}
+            <div class="mt-4 space-y-2">
+              {% for c in q.choices.all %}
+                <div class="p-3 rounded-xl border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-white/5">
+                  <div class="flex items-center justify-between gap-3">
+                    <div class="flex items-center gap-2">
+                      {% if ans and ans.selected_choice_id == c.id %}
+                        <span class="font-extrabold text-indigo-700 dark:text-cyan-200">👉</span>
+                      {% else %}
+                        <span class="text-slate-400">•</span>
+                      {% endif %}
+                      <span class="text-slate-800 dark:text-slate-200">{{ c.text }}</span>
+                    </div>
+
+                    {% if c.is_correct %}
+                      <span class="text-xs px-2 py-1 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-400/10 dark:text-emerald-200">
+                        correct
+                      </span>
+                    {% endif %}
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          {% endwith %}
+        </div>
+      {% endfor %}
+    </div>
+
   </div>
 </section>
 {% endblock %}

@@ -1,32 +1,81 @@
 {% extends "base.html" %}
+{% block title %}{{ quiz.title }} — Quiz{% endblock %}
+
 {% block content %}
-{% if questions %}
-  <form method="post" class="card">
-    {% csrf_token %}
+<section class="container mx-auto px-6 lg:px-16 py-12">
+  <div class="max-w-4xl mx-auto">
 
-    {% for q in questions %}
-      <div style="margin-bottom:16px; padding-bottom:12px; border-bottom:1px solid rgba(255,255,255,0.12);">
-        <strong>{{ forloop.counter }}. {{ q.text }}</strong>
-        <div style="margin-top:10px;">
-          {% for c in q.choices.all %}
-            <label style="display:block; margin:6px 0;">
-              <input type="radio" name="q_{{ q.id }}" value="{{ c.id }}">
-              {{ c.text }}
-            </label>
-          {% empty %}
-            <p class="small">No choices yet (add choices in Admin).</p>
-          {% endfor %}
+    <div class="fade-in rounded-2xl border border-slate-200 dark:border-white/10
+                bg-white/70 dark:bg-white/5 backdrop-blur-md shadow p-6">
+      <div class="flex items-start justify-between gap-6 flex-wrap">
+        <div>
+          <h1 class="text-2xl font-extrabold">{{ quiz.title }}</h1>
+          <p class="text-sm text-slate-600 dark:text-slate-300 mt-1">
+            Attempt #{{ attempt.id }} • Questions: {{ questions|length }}
+          </p>
         </div>
-      </div>
-    {% endfor %}
 
-    <button class="btn" type="submit">Submit</button>
-  </form>
-{% else %}
-  <div class="card">
-    <h3>No questions yet</h3>
-    <p class="small">Admin → Quizzes → Questions: add questions and choices for this quiz.</p>
-    <a class="btn" href="/admin/quizzes/question/add/">Add Question in Admin</a>
+        <a class="text-sm font-semibold text-indigo-700 dark:text-cyan-200 hover:underline"
+           href="{% url 'my_attempts' %}">My Attempts →</a>
+      </div>
+
+      {% if error %}
+        <div class="mt-4 text-sm text-red-600">{{ error }}</div>
+      {% endif %}
+
+      {% if questions %}
+        <form method="post" class="mt-6 space-y-5">
+          {% csrf_token %}
+
+          {% for q in questions %}
+            <div class="rounded-2xl border border-slate-200 dark:border-white/10
+                        bg-white/70 dark:bg-white/5 p-5">
+              <div class="flex items-start gap-3">
+                <div class="w-8 h-8 rounded-xl grid place-items-center text-sm font-extrabold
+                            bg-indigo-50 text-indigo-700 dark:bg-cyan-400/10 dark:text-cyan-200
+                            border border-slate-200 dark:border-white/10">
+                  {{ forloop.counter }}
+                </div>
+                <div class="font-semibold text-slate-900 dark:text-white">
+                  {{ q.text }}
+                </div>
+              </div>
+
+              <div class="mt-4 grid gap-2">
+                {% for c in q.choices.all %}
+                  <label class="flex items-start gap-3 p-3 rounded-xl border border-slate-200 dark:border-white/10
+              bg-white/70 dark:bg-white/5 hover:bg-white dark:hover:bg-white/10 transition cursor-pointer">
+             <input
+                type="radio"
+                name="q_{{ q.id }}"
+                value="{{ c.id }}"
+                   class="mt-1 h-4 w-4 accent-indigo-600 dark:accent-cyan-300"
+                />
+             <span class="text-slate-800 dark:text-slate-200 font-medium">
+           {{ c.text }}
+           </span>
+          </label>
+                {% empty %}
+                  <div class="text-sm text-slate-600 dark:text-slate-300">
+                    No choices yet (Admin must add choices).
+                  </div>
+                {% endfor %}
+              </div>
+            </div>
+          {% endfor %}
+
+          <button class="w-full px-4 py-3 rounded-xl bg-indigo-600 text-white font-semibold hover:bg-indigo-700 transition
+                         dark:bg-cyan-400 dark:text-slate-950 dark:hover:bg-cyan-300"
+                  type="submit">
+            Submit answers
+          </button>
+        </form>
+      {% else %}
+        <div class="mt-6 text-slate-600 dark:text-slate-300">
+          No questions yet. Admin should add questions and choices.
+        </div>
+      {% endif %}
+    </div>
   </div>
-{% endif %}
+</section>
 {% endblock %}

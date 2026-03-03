@@ -10,6 +10,7 @@
         <p class="text-slate-600 dark:text-slate-300 mt-1">{{ section.description }}</p>
       {% endif %}
     </div>
+
     <a href="{% url 'home' %}"
        class="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 dark:border-white/10
               bg-white/70 dark:bg-white/5 backdrop-blur-md hover:bg-white dark:hover:bg-white/10 transition">
@@ -44,11 +45,17 @@
                      class="w-full rounded-xl border border-slate-200 dark:border-white/10"
                      alt="YouTube thumbnail">
               </a>
+
               <div class="mt-3 flex flex-wrap gap-2">
-                <a class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 transition
-                          dark:bg-cyan-400 dark:text-slate-950 dark:hover:bg-cyan-300"
-                   href="{{ item.data.youtube_url|default:'https://www.youtube.com/watch?v='|add:item.data.youtube_id }}"
-                   target="_blank" rel="noopener">Open on YouTube →</a>
+                {% if item.data.youtube_url %}
+                  <a class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 transition
+                            dark:bg-cyan-400 dark:text-slate-950 dark:hover:bg-cyan-300"
+                     href="{{ item.data.youtube_url }}" target="_blank" rel="noopener">Open on YouTube →</a>
+                {% else %}
+                  <a class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 transition
+                            dark:bg-cyan-400 dark:text-slate-950 dark:hover:bg-cyan-300"
+                     href="https://www.youtube.com/watch?v={{ item.data.youtube_id }}" target="_blank" rel="noopener">Open on YouTube →</a>
+                {% endif %}
 
                 <button class="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 dark:border-white/10
                                bg-white/70 dark:bg-white/5 backdrop-blur-md hover:bg-white dark:hover:bg-white/10 transition"
@@ -88,7 +95,11 @@
                   <iframe src="{{ item.asset.file.url }}" class="w-full h-full"></iframe>
                 </div>
               {% elif item.asset.mime_type|slice:":6" == "image/" %}
-                <img src="{{ item.asset.file.url }}" class="w-full rounded-xl border border-slate-200 dark:border-white/10" alt="{{ item.asset.title }}">
+                <img src="{{ item.asset.file.url }}"
+                     class="w-full rounded-xl border border-slate-200 dark:border-white/10"
+                     alt="{{ item.asset.title }}">
+              {% else %}
+                <p class="text-sm text-slate-600 dark:text-slate-300">Preview not available for this file type.</p>
               {% endif %}
 
               <div class="mt-3">
@@ -106,8 +117,37 @@
               <a class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 transition
                         dark:bg-cyan-400 dark:text-slate-950 dark:hover:bg-cyan-300"
                  href="{{ item.asset.file.url }}" target="_blank" rel="noopener">Download DXF</a>
+              <p class="text-xs text-slate-500 dark:text-slate-400 mt-2">
+                Tip: upload a PDF/PNG export for preview (as DRAWING).
+              </p>
             {% else %}
               <p class="text-sm text-slate-600 dark:text-slate-300">Attach a DXF FileAsset in Admin.</p>
+            {% endif %}
+
+          {% elif item.type == "ANIMATION" %}
+            {% if item.asset %}
+              <div class="text-sm text-slate-600 dark:text-slate-300 mb-2">File: {{ item.asset.title }}</div>
+
+              {% if item.asset.mime_type|slice:":6" == "video/" %}
+                <video class="w-full rounded-xl border border-slate-200 dark:border-white/10" controls>
+                  <source src="{{ item.asset.file.url }}" type="{{ item.asset.mime_type }}">
+                  Your browser does not support the video tag.
+                </video>
+              {% elif item.asset.mime_type|slice:":6" == "image/" %}
+                <img src="{{ item.asset.file.url }}"
+                     class="w-full rounded-xl border border-slate-200 dark:border-white/10"
+                     alt="{{ item.asset.title }}">
+              {% else %}
+                <p class="text-sm text-slate-600 dark:text-slate-300">Preview not available for this file type.</p>
+              {% endif %}
+
+              <div class="mt-3">
+                <a class="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 dark:border-white/10
+                          bg-white/70 dark:bg-white/5 backdrop-blur-md hover:bg-white dark:hover:bg-white/10 transition"
+                   href="{{ item.asset.file.url }}" target="_blank" rel="noopener">Open / Download</a>
+              </div>
+            {% else %}
+              <p class="text-sm text-slate-600 dark:text-slate-300">Attach an MP4/GIF FileAsset in Admin.</p>
             {% endif %}
 
           {% elif item.type == "QUIZ" %}
@@ -118,9 +158,6 @@
             {% else %}
               <p class="text-sm text-slate-600 dark:text-slate-300">Quiz is not linked yet in Admin.</p>
             {% endif %}
-
-          {% elif item.type == "ANIMATION" %}
-            <p class="text-sm text-slate-600 dark:text-slate-300">Animation (MVP placeholder).</p>
 
           {% else %}
             <p class="text-sm text-slate-600 dark:text-slate-300">Unsupported item type.</p>
