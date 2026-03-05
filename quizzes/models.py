@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.db import models
 from catalog.models import ContentItem
+from django.core.exceptions import ValidationError
 
 
 class Difficulty(models.TextChoices):
@@ -26,14 +27,22 @@ class Quiz(models.Model):
 
 class Question(models.Model):
     quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE, related_name="questions")
-    text = models.TextField()
     order = models.PositiveIntegerField(default=0)
+    text = models.TextField(blank=True)
+    question_image = models.FileField(upload_to="quiz_images/questions/", blank=True, null=True)
 
     difficulty = models.CharField(
         max_length=10,
         choices=Difficulty.choices,
         default=Difficulty.EASY,
     )
+
+    def clean(self):
+        super().clean()
+        has_text = bool((self.text or "").strip())
+        has_img = bool(self.question_image)
+        if not has_text and not has_img:
+            raise ValidationError("Question must have either text or an image.")
 
     class Meta:
         ordering = ["order", "id"]
@@ -44,9 +53,18 @@ class Question(models.Model):
 
 class Choice(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name="choices")
-    text = models.CharField(max_length=500)
     is_correct = models.BooleanField(default=False)
     order = models.PositiveIntegerField(default=0)
+    text = models.CharField(max_length=255, blank=True)
+    choice_image = models.FileField(upload_to="quiz_images/choices/", blank=True, null=True)
+
+
+    def clean(self):
+        super().clean()
+        has_text = bool((self.text or "").strip())
+        has_img = bool(self.choice_image)
+        if not has_text and not has_img:
+            raise ValidationError("Choice must have either text or an image.")
 
     class Meta:
         ordering = ["order", "id"]

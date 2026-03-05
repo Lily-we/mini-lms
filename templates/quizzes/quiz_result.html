@@ -10,9 +10,9 @@
     <!-- Header -->
     <div class="fade-in flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
       <div>
-        <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight">{{ quiz.title }} — Result</h1>
+        <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight">{{ quiz.title }}</h1>
         <div class="mt-1 text-sm text-slate-600 dark:text-slate-300">
-          Attempt #{{ attempt.id }} • Level: <span class="font-semibold">{{ attempt.difficulty }}</span>
+          Result • Attempt #{{ attempt.id }} • Level: <span class="font-semibold">{{ attempt.difficulty }}</span>
         </div>
       </div>
 
@@ -32,6 +32,7 @@
 
     <!-- Summary + Leaderboard -->
     <div class="mt-6 grid lg:grid-cols-2 gap-4">
+
       <!-- Summary -->
       <div class="fade-in rounded-2xl border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-white/5 backdrop-blur-md shadow p-6">
         <div class="flex items-start justify-between gap-4">
@@ -40,8 +41,10 @@
             <div class="mt-2 text-2xl font-extrabold tracking-tight">
               {{ attempt.score }} / {{ attempt.total }}
             </div>
-            <div class="text-sm text-slate-600 dark:text-slate-300">
-              Results shown after submission
+            <div class="mt-1 text-sm text-slate-600 dark:text-slate-300">
+              Correct: <span class="font-semibold">{{ correct }}</span> •
+              Wrong: <span class="font-semibold">{{ wrong }}</span> •
+              Skipped: <span class="font-semibold">{{ skipped }}</span>
             </div>
           </div>
 
@@ -69,6 +72,10 @@
             <div class="mt-1 text-2xl font-extrabold text-slate-700 dark:text-slate-200">{{ skipped }}</div>
           </div>
         </div>
+
+        <div class="mt-4 text-xs text-slate-500 dark:text-slate-400">
+          Tip: Retake is allowed, but leaderboard ranking uses your first submitted attempt.
+        </div>
       </div>
 
       <!-- Leaderboard -->
@@ -79,7 +86,8 @@
 
             {% if rank %}
               <div class="mt-2 text-xl font-extrabold tracking-tight">
-                #{{ rank }} / {{ total_participants }}
+                You are <span class="text-indigo-700 dark:text-cyan-200">#{{ rank }}</span>
+                <span class="text-slate-500 dark:text-slate-400">/ {{ total_participants }}</span>
               </div>
               <div class="mt-1 text-sm text-slate-600 dark:text-slate-300">
                 Higher than <span class="font-semibold">{{ percentile }}%</span> of participants
@@ -93,7 +101,7 @@
             <div class="text-right">
               <div class="text-xs text-slate-500 dark:text-slate-400">Rule</div>
               <div class="mt-2 text-xs px-3 py-2 rounded-xl border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-white/5 text-slate-600 dark:text-slate-300 max-w-[240px]">
-                Retake allowed, leaderboard uses first attempt.
+                First attempt counts
               </div>
             </div>
           {% endif %}
@@ -132,16 +140,28 @@
     <div class="mt-6 space-y-4">
       {% for q in questions %}
         <div class="fade-in rounded-2xl border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-white/5 backdrop-blur-md shadow p-6">
-          <div class="font-semibold">
-            {{ forloop.counter }}. {{ q.text }}
+          <div class="flex items-start justify-between gap-3">
+            <div class="font-semibold">
+              {{ forloop.counter }}. {{ q.text }}
+            </div>
           </div>
+
+          {% if q.question_image %}
+            <div class="mt-3">
+              <img src="{{ q.question_image.url }}"
+                   alt="Question image"
+                   class="w-full max-h-[360px] object-contain rounded-xl
+                          border border-slate-200 dark:border-white/10
+                          bg-white/60 dark:bg-white/5">
+            </div>
+          {% endif %}
 
           {% with ans=answers|get_item:q.id %}
             <div class="mt-4 space-y-2">
               {% for c in q.choices.all %}
                 <div class="p-3 rounded-xl border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-white/5">
                   <div class="flex items-center justify-between gap-3">
-                    <div class="flex items-center gap-2">
+                    <div class="flex items-center gap-2 min-w-0">
                       {% if ans and ans.selected_choice_id == c.id %}
                         <span class="font-extrabold text-indigo-700 dark:text-cyan-200">👉</span>
                       {% else %}
@@ -156,6 +176,14 @@
                       </span>
                     {% endif %}
                   </div>
+
+                  {% if c.choice_image %}
+                    <img src="{{ c.choice_image.url }}"
+                         alt="Choice image"
+                         class="mt-2 w-full max-h-[220px] object-contain rounded-xl
+                                border border-slate-200 dark:border-white/10
+                                bg-white/60 dark:bg-white/5">
+                  {% endif %}
                 </div>
               {% endfor %}
             </div>
