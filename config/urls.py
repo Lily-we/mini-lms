@@ -8,8 +8,5 @@ urlpatterns = [
     path("", include("catalog.urls")),
     path("", include("accounts.urls")),
     path("", include("quizzes.urls")),
-]
-
-
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    path('accounts/', include('accounts.urls')),
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

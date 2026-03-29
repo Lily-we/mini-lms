@@ -4,13 +4,21 @@ from catalog.models import ContentItem
 from django.core.exceptions import ValidationError
 
 
+def question_image_path(instance, filename):
+    return f'quiz_images/questions/{filename}'
+
+
+def choice_image_path(instance, filename):
+    return f'quiz_images/choices/{filename}'
+
+
 class Difficulty(models.TextChoices):
     EASY = "EASY", "Sodda"
-    MEDIUM = "MEDIUM", "O‘rtacha"
+    MEDIUM = "MEDIUM", "O'rtacha"
     HARD = "HARD", "Qiyinroq"
 
+
 class Quiz(models.Model):
-    # Link quiz to a ContentItem where type=QUIZ
     content_item = models.OneToOneField(
         ContentItem,
         on_delete=models.CASCADE,
@@ -19,7 +27,7 @@ class Quiz(models.Model):
     )
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
-    pass_score = models.PositiveIntegerField(default=0)  # optional
+    pass_score = models.PositiveIntegerField(default=0)
 
     def __str__(self):
         return self.title
@@ -29,8 +37,7 @@ class Question(models.Model):
     quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE, related_name="questions")
     order = models.PositiveIntegerField(default=0)
     text = models.TextField(blank=True)
-    question_image = models.FileField(upload_to="quiz_images/questions/", blank=True, null=True)
-
+    question_image = models.FileField(upload_to=question_image_path, blank=True, null=True)
     difficulty = models.CharField(
         max_length=10,
         choices=Difficulty.choices,
@@ -56,8 +63,7 @@ class Choice(models.Model):
     is_correct = models.BooleanField(default=False)
     order = models.PositiveIntegerField(default=0)
     text = models.CharField(max_length=255, blank=True)
-    choice_image = models.FileField(upload_to="quiz_images/choices/", blank=True, null=True)
-
+    choice_image = models.FileField(upload_to=choice_image_path, blank=True, null=True)
 
     def clean(self):
         super().clean()
@@ -76,16 +82,13 @@ class Choice(models.Model):
 class QuizAttempt(models.Model):
     quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE, related_name="attempts")
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="quiz_attempts")
-
     difficulty = models.CharField(
         max_length=10,
         choices=Difficulty.choices,
         default=Difficulty.EASY,
     )
-
     started_at = models.DateTimeField(auto_now_add=True)
     submitted_at = models.DateTimeField(null=True, blank=True)
-
     score = models.PositiveIntegerField(default=0)
     total = models.PositiveIntegerField(default=0)
 

@@ -1,0 +1,36 @@
+{
+  "section": "3D Modellar",
+  "description": "Chizmachilik uchun interaktiv 3D modellar — aylantirish va kattalashtirish mumkin",
+  "items": [
+    {
+      "order": 1,
+      "type": "MODEL3D",
+      "title": "Pog'onali blok",
+      "model_key": "stepped"
+    },
+    {
+      "order": 2,
+      "type": "MODEL3D",
+      "title": "Kesimli blok",
+      "model_key": "notched"
+    },
+    {
+      "order": 3,
+      "type": "MODEL3D",
+      "title": "Asos va silindrli pin",
+      "model_key": "pin"
+    },
+    {
+      "order": 4,
+      "type": "MODEL3D",
+      "title": "L-shaklli blok",
+      "model_key": "lshape"
+    },
+    {
+      "order": 5,
+      "type": "MODEL3D",
+      "title": "Flanes (dumaloq asos)",
+      "model_key": "flange"
+    }
+  ]
+}

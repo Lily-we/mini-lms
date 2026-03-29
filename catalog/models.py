@@ -55,6 +55,7 @@ class ContentItem(models.Model):
         ANIMATION = "ANIMATION", "Animation"
         QUIZ = "QUIZ", "Quiz"
         TELEGRAM = "TELEGRAM", "Telegram"
+        MODEL3D = "MODEL3D", "3D Model" 
 
     section = models.ForeignKey(Section, on_delete=models.CASCADE, related_name="items")
     title = models.CharField(max_length=255)

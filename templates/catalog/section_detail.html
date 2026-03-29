@@ -10,7 +10,6 @@
         <p class="text-slate-600 dark:text-slate-300 mt-1">{{ section.description }}</p>
       {% endif %}
     </div>
-
     <a href="{% url 'home' %}"
        class="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 dark:border-white/10
               bg-white/70 dark:bg-white/5 backdrop-blur-md hover:bg-white dark:hover:bg-white/10 transition">
@@ -21,13 +20,15 @@
   <div class="mt-6 grid lg:grid-cols-2 gap-4">
     {% for item in items %}
       <div class="fade-in rounded-2xl border border-slate-200 dark:border-white/10
-                  bg-white/70 dark:bg-white/5 backdrop-blur-md shadow p-5">
+                  bg-white/70 dark:bg-white/5 backdrop-blur-md shadow p-5
+                  {% if item.type == 'MODEL3D' %}lg:col-span-2{% endif %}">
         <div class="min-w-0">
           <div class="font-extrabold text-lg">{{ item.title }}</div>
           <div class="text-xs mt-1 text-slate-500 dark:text-slate-400">Type: {{ item.type }}</div>
         </div>
 
         <div class="mt-4">
+
           {% if item.type == "TEXT" %}
             <div class="text-slate-700 dark:text-slate-200 leading-relaxed">
               {{ item.data.text|default:"(no text yet)"|linebreaksbr }}
@@ -45,7 +46,6 @@
                      class="w-full rounded-xl border border-slate-200 dark:border-white/10"
                      alt="YouTube thumbnail">
               </a>
-
               <div class="mt-3 flex flex-wrap gap-2">
                 {% if item.data.youtube_url %}
                   <a class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 transition
@@ -56,7 +56,6 @@
                             dark:bg-cyan-400 dark:text-slate-950 dark:hover:bg-cyan-300"
                      href="https://www.youtube.com/watch?v={{ item.data.youtube_id }}" target="_blank" rel="noopener">Open on YouTube →</a>
                 {% endif %}
-
                 <button class="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 dark:border-white/10
                                bg-white/70 dark:bg-white/5 backdrop-blur-md hover:bg-white dark:hover:bg-white/10 transition"
                         type="button"
@@ -64,7 +63,6 @@
                   Play here (embed)
                 </button>
               </div>
-
               <div id="yt_{{ item.id }}" class="hidden mt-4">
                 <div class="aspect-video w-full rounded-xl overflow-hidden border border-slate-200 dark:border-white/10">
                   <iframe class="w-full h-full"
@@ -74,7 +72,7 @@
                           allowfullscreen></iframe>
                 </div>
                 <p class="text-xs text-slate-500 dark:text-slate-400 mt-2">
-                  If embed fails on some networks, use “Open on YouTube”.
+                  If embed fails on some networks, use "Open on YouTube".
                 </p>
               </div>
             {% else %}
@@ -86,10 +84,9 @@
                       dark:bg-cyan-400 dark:text-slate-950 dark:hover:bg-cyan-300"
                href="{{ item.data.invite_url }}" target="_blank" rel="noopener">Open Telegram →</a>
 
-          {% elif item.type == "DRAWING" %}
+          {% elif item.type == "DRAWING/BOOKS" %}
             {% if item.asset %}
               <div class="text-sm text-slate-600 dark:text-slate-300 mb-2">File: {{ item.asset.title }}</div>
-
               {% if item.asset.mime_type == "application/pdf" %}
                 <div class="h-[420px] rounded-xl overflow-hidden border border-slate-200 dark:border-white/10">
                   <iframe src="{{ item.asset.file.url }}" class="w-full h-full"></iframe>
@@ -101,7 +98,6 @@
               {% else %}
                 <p class="text-sm text-slate-600 dark:text-slate-300">Preview not available for this file type.</p>
               {% endif %}
-
               <div class="mt-3">
                 <a class="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 dark:border-white/10
                           bg-white/70 dark:bg-white/5 backdrop-blur-md hover:bg-white dark:hover:bg-white/10 transition"
@@ -127,7 +123,6 @@
           {% elif item.type == "ANIMATION" %}
             {% if item.asset %}
               <div class="text-sm text-slate-600 dark:text-slate-300 mb-2">File: {{ item.asset.title }}</div>
-
               {% if item.asset.mime_type|slice:":6" == "video/" %}
                 <video class="w-full rounded-xl border border-slate-200 dark:border-white/10" controls>
                   <source src="{{ item.asset.file.url }}" type="{{ item.asset.mime_type }}">
@@ -140,7 +135,6 @@
               {% else %}
                 <p class="text-sm text-slate-600 dark:text-slate-300">Preview not available for this file type.</p>
               {% endif %}
-
               <div class="mt-3">
                 <a class="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 dark:border-white/10
                           bg-white/70 dark:bg-white/5 backdrop-blur-md hover:bg-white dark:hover:bg-white/10 transition"
@@ -159,9 +153,19 @@
               <p class="text-sm text-slate-600 dark:text-slate-300">Quiz is not linked yet in Admin.</p>
             {% endif %}
 
+          {% elif item.type == "MODEL3D" %}
+            <p class="text-sm text-slate-500 dark:text-slate-400 mb-3">Drag to rotate · Scroll to zoom</p>
+            <div class="rounded-xl overflow-hidden border border-slate-200 dark:border-white/10"
+                 style="background:#1a1a2e;">
+              <canvas id="canvas3d_{{ item.id }}"
+                      style="width:100%; display:block; touch-action:none;"
+                      data-model="{{ item.data.model_key }}"></canvas>
+            </div>
+
           {% else %}
             <p class="text-sm text-slate-600 dark:text-slate-300">Unsupported item type.</p>
           {% endif %}
+
         </div>
       </div>
     {% empty %}
@@ -171,4 +175,136 @@
     {% endfor %}
   </div>
 </section>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+(function(){
+  const input = document.getElementById("tileSearch");
+  if(!input) return;
+  const tiles = Array.from(document.querySelectorAll("#tiles .tile"));
+  input.addEventListener("input", () => {
+    const q = (input.value || "").trim().toLowerCase();
+    tiles.forEach(t => {
+      t.style.display = (!q || (t.dataset.key||"").includes(q)) ? "flex" : "none";
+    });
+  });
+})();
+</script>
+
+{% if has_3d %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function(){
+
+  function mesh(geo, mat, x, y, z) {
+    const m = new THREE.Mesh(geo, mat);
+    m.position.set(x, y, z);
+    return m;
+  }
+
+  function buildModel(key, group) {
+    const cyan  = new THREE.MeshPhongMaterial({color:0x00bcd4, transparent:true, opacity:0.9});
+    const green = new THREE.MeshPhongMaterial({color:0x4caf50, transparent:true, opacity:0.9});
+    const yell  = new THREE.MeshPhongMaterial({color:0xffeb3b, transparent:true, opacity:0.9});
+    const dark  = new THREE.MeshPhongMaterial({color:0x1a1a2e});
+
+    if (key === 'stepped') {
+      group.add(mesh(new THREE.BoxGeometry(3,0.5,2),  yell,  0,    -1,    0));
+      group.add(mesh(new THREE.BoxGeometry(2,1,1.5),  green, -0.2, -0.25, 0));
+      group.add(mesh(new THREE.BoxGeometry(1,1.2,1),  cyan,   0.5,  0.6,  0));
+    } else if (key === 'notched') {
+      group.add(mesh(new THREE.BoxGeometry(3.5,0.8,2.5), green,  0,    -0.8, 0));
+      group.add(mesh(new THREE.BoxGeometry(2,1,2.5),     cyan,  -0.5,  0.3,  0));
+    } else if (key === 'pin') {
+      group.add(mesh(new THREE.BoxGeometry(4,0.3,2.5),           yell,  0,    -1,   0));
+      group.add(mesh(new THREE.BoxGeometry(2,0.5,1.5),           green, -0.5, -0.6, 0));
+      group.add(mesh(new THREE.CylinderGeometry(0.4,0.4,1,32),   cyan,   0.8, -0.1, 0));
+    } else if (key === 'lshape') {
+      group.add(mesh(new THREE.BoxGeometry(3,0.8,2),  green,  0,   -0.9,  0));
+      group.add(mesh(new THREE.BoxGeometry(1,1.5,2),  cyan,  -1,    0.25, 0));
+    } else if (key === 'flange') {
+      group.add(mesh(new THREE.CylinderGeometry(1.8,1.8,0.3,48),  green, 0, -0.9, 0));
+      group.add(mesh(new THREE.CylinderGeometry(0.7,0.7,1.2,32),  cyan,  0,  0,   0));
+      group.add(mesh(new THREE.CylinderGeometry(0.25,0.25,1.4,32),dark,  0,  0,   0));
+    }
+  }
+
+  function initViewer(canvas) {
+    const key = canvas.dataset.model || 'stepped';
+    const W = canvas.parentElement.offsetWidth;
+    const H = Math.round(W * 0.56);
+    canvas.width = W;
+    canvas.height = H;
+    canvas.style.height = H + 'px';
+
+    const renderer = new THREE.WebGLRenderer({canvas, antialias:true});
+    renderer.setSize(W, H);
+    renderer.setClearColor(0x1a1a2e, 1);
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(45, W/H, 0.1, 100);
+    camera.position.set(4, 3, 5);
+    camera.lookAt(0, 0, 0);
+
+    scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+    const dir = new THREE.DirectionalLight(0xffffff, 0.9);
+    dir.position.set(5, 8, 5);
+    scene.add(dir);
+    const dir2 = new THREE.DirectionalLight(0x8888ff, 0.3);
+    dir2.position.set(-5, -3, -5);
+    scene.add(dir2);
+
+    const grid = new THREE.GridHelper(8, 16, 0x333355, 0x222244);
+    grid.position.y = -1.4;
+    scene.add(grid);
+
+    const group = new THREE.Group();
+    buildModel(key, group);
+    scene.add(group);
+
+    let dragging = false, prevX = 0, prevY = 0, pinchDist = null;
+
+    canvas.addEventListener('mousedown', e => { dragging=true; prevX=e.clientX; prevY=e.clientY; });
+    window.addEventListener('mouseup', () => dragging=false);
+    window.addEventListener('mousemove', e => {
+      if (!dragging) return;
+      group.rotation.y += (e.clientX - prevX) * 0.01;
+      group.rotation.x += (e.clientY - prevY) * 0.01;
+      prevX = e.clientX; prevY = e.clientY;
+    });
+    canvas.addEventListener('wheel', e => {
+      camera.position.z = Math.max(2, Math.min(12, camera.position.z + e.deltaY * 0.01));
+      e.preventDefault();
+    }, {passive:false});
+    canvas.addEventListener('touchstart', e => {
+      if (e.touches.length === 1) { dragging=true; prevX=e.touches[0].clientX; prevY=e.touches[0].clientY; }
+      if (e.touches.length === 2) pinchDist = Math.hypot(e.touches[0].clientX-e.touches[1].clientX, e.touches[0].clientY-e.touches[1].clientY);
+    });
+    canvas.addEventListener('touchend', () => { dragging=false; pinchDist=null; });
+    canvas.addEventListener('touchmove', e => {
+      e.preventDefault();
+      if (e.touches.length === 1 && dragging) {
+        group.rotation.y += (e.touches[0].clientX - prevX) * 0.01;
+        group.rotation.x += (e.touches[0].clientY - prevY) * 0.01;
+        prevX = e.touches[0].clientX; prevY = e.touches[0].clientY;
+      }
+      if (e.touches.length === 2 && pinchDist) {
+        const d = Math.hypot(e.touches[0].clientX-e.touches[1].clientX, e.touches[0].clientY-e.touches[1].clientY);
+        camera.position.z = Math.max(2, Math.min(12, camera.position.z - (d - pinchDist) * 0.02));
+        pinchDist = d;
+      }
+    }, {passive:false});
+
+    (function animate() {
+      requestAnimationFrame(animate);
+      if (!dragging) group.rotation.y += 0.005;
+      renderer.render(scene, camera);
+    })();
+  }
+
+  document.querySelectorAll('canvas[id^="canvas3d_"]').forEach(initViewer);
+})();
+</script>
+{% endif %}
 {% endblock %}

@@ -1,9 +1,6 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, render
-
 from .models import Section, ContentItem
-
-# If you use Telegram gating
 from quizzes.models import Quiz, QuizAttempt
 
 
@@ -16,7 +13,6 @@ def home(request):
 @login_required
 def section_detail(request, slug: str):
     section = get_object_or_404(Section, slug=slug, is_published=True)
-
     items = (
         ContentItem.objects
         .filter(section=section, is_published=True)
@@ -24,7 +20,8 @@ def section_detail(request, slug: str):
         .order_by("order", "title")
     )
 
-    # --- Telegram gating context (safe even if no TELEGRAM items) ---
+    has_3d = items.filter(type="MODEL3D").exists()
+
     required_ids = set()
     for it in items:
         if it.type == ContentItem.ItemType.TELEGRAM and isinstance(it.data, dict):
@@ -35,7 +32,6 @@ def section_detail(request, slug: str):
                 required_ids.add(rq)
 
     available_quiz_ids = set(Quiz.objects.filter(id__in=required_ids).values_list("id", flat=True))
-
     completed_quiz_ids = set(
         QuizAttempt.objects.filter(
             user=request.user,
@@ -50,6 +46,7 @@ def section_detail(request, slug: str):
         {
             "section": section,
             "items": items,
+            "has_3d": has_3d,
             "available_quiz_ids": list(available_quiz_ids),
             "completed_quiz_ids": list(completed_quiz_ids),
         },

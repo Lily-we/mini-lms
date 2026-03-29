@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>AI Chat Tutor</h2>
+
+<form method="POST">
+  {% csrf_token %}
+  <textarea name="message" placeholder="Ask something..." rows="3" cols="50">{{ user_message }}</textarea><br>
+  <button type="submit">Send</button>
+</form>
+
+{% if answer %}
+<h3>AI Answer:</h3>
+<p>{{ answer }}</p>
+{% endif %}
+
+{% endblock %}
