@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>3D Geometric Models</title>
+    <style>
+        :root {
+            --color-border-tertiary: #333355;
+            --color-text-secondary: #94a3b8;
+            --color-text-primary: #f8fafc;
+            --color-background-secondary: #2d2d44;
+            --color-background-info: #3b82f6;
+            --color-text-info: #ffffff;
+            --border-radius-lg: 12px;
+            --border-radius-md: 6px;
+        }
+        body { background: #0f0f1a; font-family: sans-serif; color: white; margin: 20px; }
+        .container { max-width: 900px; margin: auto; }
+        #model-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 1rem; }
+        .canvas-wrapper { 
+            border: 0.5px solid var(--color-border-tertiary); 
+            border-radius: var(--border-radius-lg); 
+            overflow: hidden; 
+            background: #1a1a2e; 
+        }
+        canvas { width: 100%; display: block; touch-action: none; }
+        .hint { font-size: 13px; color: var(--color-text-secondary); margin-top: 8px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div id="model-tabs"></div>
+    <div class="canvas-wrapper">
+        <canvas id="c3d"></canvas>
+    </div>
+    <p class="hint">Drag to rotate · Scroll to zoom · Parts are floating for visibility</p>
+</div>
+
+<script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
+<script src="https://unpkg.com/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+/** 
+ * MODEL BUILDERS 
+ * Based on provided reference images 
+ */
+
+// 1. Interlock 1 (Cyan & Yellow) - image_f02f08.png
+function buildInterlock1(g) {
+    const matCyan = new THREE.MeshPhongMaterial({color: 0x00bcd4, transparent:true, opacity:0.9});
+    const matYellow = new THREE.MeshPhongMaterial({color: 0xffeb3b, transparent:true, opacity:0.9});
+    const base = new THREE.Mesh(new THREE.BoxGeometry(3, 0.5, 2), matCyan);
+    base.position.y = -1;
+    g.add(base);
+    const leftWall = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1, 2), matCyan);
+    leftWall.position.set(-1.1, -0.25, 0);
+    g.add(leftWall);
+    const rightWall = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1, 2), matCyan);
+    rightWall.position.set(1.1, -0.25, 0);
+    g.add(rightWall);
+    const topBlock = new THREE.Mesh(new THREE.BoxGeometry(1.4, 1.2, 2), matYellow);
+    topBlock.position.set(0, 1.2, 0); // Floating
+    g.add(topBlock);
+}
+
+// 2. Tab & Slot (Green & Pink) - image_f02f24.png
+function buildTabSlot(g) {
+    const matGreen = new THREE.MeshPhongMaterial({color: 0x8bc34a});
+    const matPink = new THREE.MeshPhongMaterial({color: 0xe91e63});
+    const gBase = new THREE.Mesh(new THREE.BoxGeometry(2, 0.8, 2), matGreen);
+    gBase.position.set(-0.5, -0.9, 0);
+    g.add(gBase);
+    const gRound = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, 0.8, 32), matGreen);
+    gRound.position.set(0.5, -0.9, 0);
+    g.add(gRound);
+    const pTop = new THREE.Mesh(new THREE.BoxGeometry(2, 0.8, 2), matPink);
+    pTop.position.set(-0.5, 0.8, 0); // Floating
+    g.add(pTop);
+    const pRound = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, 0.8, 32), matPink);
+    pRound.position.set(0.5, 0.8, 0);
+    g.add(pRound);
+    const peg = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.8, 0.5), matPink);
+    peg.position.set(-0.3, 0, 0.5);
+    g.add(peg);
+}
+
+// 3. Industrial Connector (Pink & Blue) - image_f02f43.png
+function buildConnector(g) {
+    const matBlue = new THREE.MeshPhongMaterial({color: 0x2196f3});
+    const matPink = new THREE.MeshPhongMaterial({color: 0xf48fb1});
+    const pBase = new THREE.Mesh(new THREE.BoxGeometry(3, 0.4, 2), matPink);
+    pBase.position.y = -1.1;
+    g.add(pBase);
+    const pCenter = new THREE.Mesh(new THREE.BoxGeometry(0.6, 1.2, 0.6), matPink);
+    pCenter.position.y = -0.5;
+    g.add(pCenter);
+    const bLeft = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.5, 2), matBlue);
+    bLeft.position.set(-1.1, 1, 0);
+    g.add(bLeft);
+    const bRight = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.5, 2), matBlue);
+    bRight.position.set(1.1, 1, 0);
+    g.add(bRight);
+    const bTop = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.5, 2), matBlue);
+    bTop.position.set(0, 1.5, 0);
+    g.add(bTop);
+}
+
+// 4. Sliding Joint (Tan & Cyan) - image_f02f64.png
+function buildSlidingJoint(g) {
+    const matTan = new THREE.MeshPhongMaterial({color: 0xd2b48c});
+    const matCyan = new THREE.MeshPhongMaterial({color: 0x00e5ff});
+    const tanPart = new THREE.Mesh(new THREE.BoxGeometry(1.5, 1.5, 1.5), matTan);
+    tanPart.position.set(-1.5, 0.5, 0);
+    g.add(tanPart);
+    const cyanBase = new THREE.Mesh(new THREE.BoxGeometry(3, 0.5, 2), matCyan);
+    cyanBase.position.y = -1;
+    g.add(cyanBase);
+    const cyanRail = new THREE.Mesh(new THREE.BoxGeometry(3, 0.5, 0.8), matCyan);
+    cyanRail.position.set(0, -0.5, 0.6);
+    g.add(cyanRail);
+}
+
+// 5. Angled Mount (Pink & Teal) - image_f02f7e.png
+function buildAngledMount(g) {
+    const matPink = new THREE.MeshPhongMaterial({color: 0xffc0cb});
+    const matTeal = new THREE.MeshPhongMaterial({color: 0x008080});
+    const pBase = new THREE.Mesh(new THREE.BoxGeometry(2, 1, 2), matPink);
+    pBase.position.set(-0.5, -0.8, 0);
+    g.add(pBase);
+    const tPlate = new THREE.Mesh(new THREE.BoxGeometry(2, 0.4, 2), matTeal);
+    tPlate.position.set(1.5, 1, 0);
+    tPlate.rotation.z = Math.PI / 4;
+    g.add(tPlate);
+    const tPeg = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.4, 1.5, 32), matTeal);
+    tPeg.position.set(1, 0.5, 0);
+    tPeg.rotation.z = Math.PI / 4;
+    g.add(tPeg);
+}
+
+// 6. Housing Unit (Green & Light Blue) - image_f02f84.png
+function buildHousing(g) {
+    const matGreen = new THREE.MeshPhongMaterial({color: 0x4caf50});
+    const matBlue = new THREE.MeshPhongMaterial({color: 0x03a9f4});
+    const base = new THREE.Mesh(new THREE.BoxGeometry(3.5, 1, 2.5), matGreen);
+    base.position.y = -1;
+    g.add(base);
+    const lid = new THREE.Mesh(new THREE.BoxGeometry(3.5, 0.3, 2.5), matBlue);
+    lid.position.y = 1.2;
+    g.add(lid);
+    const plug = new THREE.Mesh(new THREE.BoxGeometry(2.5, 0.5, 1.5), matBlue);
+    plug.position.y = 0.8;
+    g.add(plug);
+}
+
+const MODELS = [
+  { name: "Interlock 1", build: buildInterlock1 },
+  { name: "Tab & Slot", build: buildTabSlot },
+  { name: "Connector", build: buildConnector },
+  { name: "Sliding Joint", build: buildSlidingJoint },
+  { name: "Angled Mount", build: buildAngledMount },
+  { name: "Housing Unit", build: buildHousing },
+];
+
+let scene, camera, renderer, group;
+let isDragging = false, prevX = 0, prevY = 0;
+
+function initScene() {
+  const canvas = document.getElementById('c3d');
+  const W = canvas.parentElement.offsetWidth;
+  const H = Math.round(W * 0.56);
+  canvas.width = W; canvas.height = H;
+
+  renderer = new THREE.WebGLRenderer({canvas, antialias: true, alpha: true});
+  renderer.setSize(W, H);
+  renderer.setClearColor(0x1a1a2e, 1);
+
+  scene = new THREE.Scene();
+  camera = new THREE.PerspectiveCamera(45, W/H, 0.1, 100);
+  camera.position.set(5, 4, 7);
+  camera.lookAt(0, 0, 0);
+
+  scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+  const dir = new THREE.DirectionalLight(0xffffff, 0.9);
+  dir.position.set(5, 8, 5);
+  scene.add(dir);
+
+  group = new THREE.Group();
+  scene.add(group);
+
+  const grid = new THREE.GridHelper(10, 20, 0x333355, 0x222244);
+  grid.position.y = -1.5;
+  scene.add(grid);
+
+  loadModel(0);
+  addEvents(canvas);
+  animate();
+}
+
+function loadModel(idx) {
+  while(group.children.length) group.remove(group.children[0]);
+  MODELS[idx].build(group);
+  
+  // Update UI Tabs
+  document.querySelectorAll('#model-tabs button').forEach((b,i) => {
+    const isActive = i === idx;
+    b.style.background = isActive ? 'var(--color-background-info)' : 'var(--color-background-secondary)';
+    b.style.color = isActive ? 'var(--color-text-info)' : 'var(--color-text-primary)';
+    b.style.borderColor = isActive ? 'var(--color-border-info)' : 'var(--color-border-tertiary)';
+  });
+}
+
+function animate() {
+  requestAnimationFrame(animate);
+  if (!isDragging) group.rotation.y += 0.005;
+  renderer.render(scene, camera);
+}
+
+function addEvents(canvas) {
+  canvas.addEventListener('mousedown', e => { isDragging=true; prevX=e.clientX; prevY=e.clientY; });
+  window.addEventListener('mouseup', () => isDragging=false);
+  window.addEventListener('mousemove', e => {
+    if (!isDragging) return;
+    group.rotation.y += (e.clientX - prevX) * 0.01;
+    group.rotation.x += (e.clientY - prevY) * 0.01;
+    prevX=e.clientX; prevY=e.clientY;
+  });
+  canvas.addEventListener('wheel', e => {
+    camera.position.z = Math.max(2, Math.min(15, camera.position.z + e.deltaY * 0.01));
+    e.preventDefault();
+  }, {passive:false});
+}
+
+// Generate Tabs
+const tabs = document.getElementById('model-tabs');
+MODELS.forEach((m, i) => {
+  const btn = document.createElement('button');
+  btn.textContent = m.name;
+  btn.style.cssText = 'padding: 8px 16px; border-radius: var(--border-radius-md); border: 0.5px solid; font-size: 13px; cursor: pointer; transition: all 0.15s; background: var(--color-background-secondary); color: var(--color-text-primary); border-color: var(--color-border-tertiary);';
+  btn.onclick = () => loadModel(i);
+  tabs.appendChild(btn);
+});
+
+window.addEventListener('resize', () => {
+    const W = tabs.parentElement.offsetWidth;
+    const H = Math.round(W * 0.56);
+    camera.aspect = W / H;
+    camera.updateProjectionMatrix();
+    renderer.setSize(W, H);
+});
+
+initScene();
+</script>
+</body>
+</html>

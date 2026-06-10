@@ -23,7 +23,16 @@ def quiz_start(request, quiz_id: int):
 
     level = request.GET.get("level")
     if level not in Difficulty.values:
-        return render(request, "quizzes/quiz_level.html", {"quiz": quiz})
+        order = ['EASY', 'MEDIUM', 'HARD']
+        available_levels = list(set(
+            quiz.questions.values_list('difficulty', flat=True)
+        ))
+        available_levels.sort(key=lambda x: order.index(x) if x in order else 99)
+
+        return render(request, "quizzes/quiz_level.html", {
+            "quiz": quiz,
+            "available_levels": available_levels,
+        })
 
     existing = QuizAttempt.objects.filter(
         quiz=quiz,
