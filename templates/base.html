@@ -49,6 +49,171 @@
 
 <body class="bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 overflow-x-hidden">
 
+  <!-- ================= AI CHATBOT MODULE (DROP-IN) ================= -->
+
+<!-- Floating Button -->
+<button id="chatbotBtn"
+        class="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full
+               bg-indigo-600 text-white shadow-xl hover:bg-indigo-700
+               dark:bg-cyan-400 dark:text-slate-950 text-xl">
+  🤖
+</button>
+
+<!-- Chat Window -->
+<div id="chatbotWindow"
+     class="hidden fixed bottom-24 right-6 z-50 w-[420px] max-w-[92vw] h-[600px]
+            bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10
+            rounded-2xl shadow-2xl flex flex-col overflow-hidden">
+
+  <!-- Header -->
+  <div class="p-4 border-b border-slate-200 dark:border-white/10 flex justify-between items-center">
+    <div>
+      <div class="font-bold">SpatialLab AI</div>
+      <div class="text-xs text-slate-500">Chizmachilik yordamchisi</div>
+    </div>
+    <button id="closeChatbot" class="text-lg">✕</button>
+  </div>
+
+  <!-- Quick Suggestions (CLICKABLE QUESTIONS) -->
+  <div class="p-3 flex flex-wrap gap-2 border-b border-slate-200 dark:border-white/10">
+
+    <button class="suggestion px-3 py-1 text-sm rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-indigo-500 hover:text-white">
+      Proyeksiya nima?
+    </button>
+
+    <button class="suggestion px-3 py-1 text-sm rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-indigo-500 hover:text-white">
+      Aksonometriya nima?
+    </button>
+
+    <button class="suggestion px-3 py-1 text-sm rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-indigo-500 hover:text-white">
+      Kesim va qirqim farqi?
+    </button>
+
+  </div>
+
+  <!-- Messages -->
+  <div id="chatMessages" class="flex-1 overflow-y-auto p-4 space-y-3">
+
+    <div class="bg-slate-100 dark:bg-slate-800 p-3 rounded-xl">
+      Salom 👋 Men chizmachilik bo‘yicha yordamchiman. Savol bering yoki yuqoridan tanlang.
+    </div>
+
+  </div>
+
+  <!-- Input -->
+  <div class="p-3 border-t border-slate-200 dark:border-white/10 flex gap-2">
+    <input id="chatInput"
+           type="text"
+           placeholder="Savol yozing..."
+           class="flex-1 px-3 py-2 rounded-lg border border-slate-300 dark:border-white/10 dark:bg-slate-800">
+
+    <button id="sendChat"
+            class="px-4 py-2 rounded-lg bg-indigo-600 text-white dark:bg-cyan-400 dark:text-slate-950">
+      Send
+    </button>
+  </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+  const btn = document.getElementById("chatbotBtn");
+  const windowEl = document.getElementById("chatbotWindow");
+  const closeBtn = document.getElementById("closeChatbot");
+  const input = document.getElementById("chatInput");
+  const send = document.getElementById("sendChat");
+  const messages = document.getElementById("chatMessages");
+  const suggestions = document.querySelectorAll(".suggestion");
+
+  if (!btn || !windowEl || !input || !messages) return;
+
+  // toggle open/close
+  btn.addEventListener("click", () => windowEl.classList.toggle("hidden"));
+  closeBtn?.addEventListener("click", () => windowEl.classList.add("hidden"));
+
+  function addMessage(text, isUser=false){
+    const div = document.createElement("div");
+
+    div.className = isUser
+      ? "bg-indigo-600 text-white p-3 rounded-xl ml-10"
+      : "bg-slate-100 dark:bg-slate-800 p-3 rounded-xl mr-10";
+
+    div.textContent = text;
+    messages.appendChild(div);
+    messages.scrollTop = messages.scrollHeight;
+  }
+
+  // mini knowledge base (UZ + simple)
+  function botReply(msg){
+    msg = msg.toLowerCase();
+
+    const kb = [
+      {
+        keys: ["proyeksiya", "projection"],
+        ans: "Proyeksiya — obyektni tekislikda tasvirlash usuli. Chizmachilikda frontal, gorizontal va profil proyeksiyalar ishlatiladi."
+      },
+      {
+        keys: ["aksonometriya", "axonometric"],
+        ans: "Aksonometriya — 3D obyektni 2D tekislikda ko‘rsatish usuli. Bu vizual tushunishni osonlashtiradi."
+      },
+      {
+        keys: ["kesim", "qirqim"],
+        ans: "Kesim — ichki shaklni ko‘rsatadi. Qirqim esa kesilgan obyektning umumiy ko‘rinishini ham beradi."
+      },
+      {
+        keys: ["dxf"],
+        ans: "DXF — CAD dasturlar (AutoCAD) uchun chizma fayl formati."
+      },
+      {
+        keys: ["3d", "model"],
+        ans: "3D model — obyektning hajmli raqamli ko‘rinishi."
+      }
+    ];
+
+    for (const item of kb){
+      if (item.keys.some(k => msg.includes(k))) return item.ans;
+    }
+
+    return "Aniqroq yozing 🙂 Masalan: 'Proyeksiya nima?' yoki 'Kesim farqi?'";
+  }
+
+  function sendMessage(text){
+    if (!text.trim()) return;
+
+    addMessage(text, true);
+
+    setTimeout(() => {
+      addMessage(botReply(text));
+    }, 400);
+  }
+
+  send.addEventListener("click", () => {
+    const text = input.value;
+    input.value = "";
+    sendMessage(text);
+  });
+
+  input.addEventListener("keypress", e => {
+    if (e.key === "Enter") {
+      const text = input.value;
+      input.value = "";
+      sendMessage(text);
+    }
+  });
+
+  // clickable suggestions
+  suggestions.forEach(btn => {
+    btn.addEventListener("click", () => {
+      const text = btn.textContent;
+      sendMessage(text);
+    });
+  });
+
+});
+</script>
+
+<!-- ================= END CHATBOT MODULE ================= -->
+
   <!-- ✅ LIGHT MODE BACKGROUND (check-sheet / graph paper) -->
   <div class="absolute inset-0 -z-30 pointer-events-none dark:hidden">
     <div class="absolute inset-0 opacity-100"
