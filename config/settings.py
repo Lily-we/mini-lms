@@ -18,6 +18,14 @@ from dotenv import load_dotenv
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / ".env")
 
+# Production overrides
+if os.getenv("RAILWAY_ENVIRONMENT"):
+    DEBUG = False
+    ALLOWED_HOSTS = [os.getenv("RAILWAY_PUBLIC_DOMAIN", "*")]
+    
+    # Whitenoise for static files
+    STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
