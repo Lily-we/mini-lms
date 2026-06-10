@@ -21,3 +21,8 @@ staticfiles/
 .DS_Store
 .vscode/
 .idea/
+
+venv/
+.env
+__pycache__/
+*.pyc
