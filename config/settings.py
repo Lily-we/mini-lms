@@ -12,7 +12,7 @@ load_dotenv(BASE_DIR / ".env")
 
 SECRET_KEY = os.getenv("SECRET_KEY", "unsafe-secret-key")
 
-DEBUG = os.getenv("DEBUG", "0") == "1"
+DEBUG = 1
 
 ALLOWED_HOSTS = [
     "spatial-lab.up.railway.app",
