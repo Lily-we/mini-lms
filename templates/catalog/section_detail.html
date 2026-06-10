@@ -85,27 +85,61 @@
                href="{{ item.data.invite_url }}" target="_blank" rel="noopener">Open Telegram →</a>
 
           {% elif item.type == "DRAWING/BOOKS" %}
-            {% if item.asset %}
-              <div class="text-sm text-slate-600 dark:text-slate-300 mb-2">File: {{ item.asset.title }}</div>
-              {% if item.asset.mime_type == "application/pdf" %}
-                <div class="h-[420px] rounded-xl overflow-hidden border border-slate-200 dark:border-white/10">
-                  <iframe src="{{ item.asset.file.url }}" class="w-full h-full"></iframe>
-                </div>
-              {% elif item.asset.mime_type|slice:":6" == "image/" %}
-                <img src="{{ item.asset.file.url }}"
-                     class="w-full rounded-xl border border-slate-200 dark:border-white/10"
-                     alt="{{ item.asset.title }}">
+    {% if item.asset %}
+        <div class="text-sm text-slate-600 dark:text-slate-300 mb-2">
+            File: {{ item.asset.title }}
+        </div>
+
+        {% if item.asset.mime_type == "application/pdf" %}
+            <div class="rounded-xl border border-slate-200 dark:border-white/10 p-6 text-center">
+                <div class="text-4xl mb-3">📄</div>
+
+                <p class="font-semibold mb-2">
+                    PDF Preview
+                </p>
+
+                <p class="text-sm text-slate-600 dark:text-slate-300 mb-4">
+                    Open the PDF in a new tab.
+                </p>
+
+                <a href="{{ item.asset.file.url }}"
+                   target="_blank"
+                   rel="noopener"
+                   class="inline-flex items-center gap-2 px-4 py-2 rounded-xl
+                          bg-indigo-600 text-white hover:bg-indigo-700 transition
+                          dark:bg-cyan-400 dark:text-slate-950 dark:hover:bg-cyan-300">
+                    Open PDF →
+                </a>
+            </div>
+
+                  {% elif item.asset.mime_type|slice:":6" == "image/" %}
+                      <img src="{{ item.asset.file.url }}"
+                          class="w-full rounded-xl border border-slate-200 dark:border-white/10"
+                          alt="{{ item.asset.title }}">
+
+                  {% else %}
+                      <p class="text-sm text-slate-600 dark:text-slate-300">
+                          Preview not available for this file type.
+                      </p>
+                  {% endif %}
+
+                  <div class="mt-3">
+                      <a class="inline-flex items-center gap-2 px-4 py-2 rounded-xl
+                                border border-slate-200 dark:border-white/10
+                                bg-white/70 dark:bg-white/5 backdrop-blur-md
+                                hover:bg-white dark:hover:bg-white/10 transition"
+                        href="{{ item.asset.file.url }}"
+                        target="_blank"
+                        rel="noopener">
+                          Open / Download
+                      </a>
+                  </div>
+
               {% else %}
-                <p class="text-sm text-slate-600 dark:text-slate-300">Preview not available for this file type.</p>
+                  <p class="text-sm text-slate-600 dark:text-slate-300">
+                      Attach a FileAsset in Admin.
+                  </p>
               {% endif %}
-              <div class="mt-3">
-                <a class="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 dark:border-white/10
-                          bg-white/70 dark:bg-white/5 backdrop-blur-md hover:bg-white dark:hover:bg-white/10 transition"
-                   href="{{ item.asset.file.url }}" target="_blank" rel="noopener">Open / Download</a>
-              </div>
-            {% else %}
-              <p class="text-sm text-slate-600 dark:text-slate-300">Attach a FileAsset in Admin.</p>
-            {% endif %}
 
           {% elif item.type == "DXF" %}
             {% if item.asset %}
